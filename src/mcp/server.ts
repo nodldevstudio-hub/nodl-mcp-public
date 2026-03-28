@@ -11,6 +11,7 @@ import { listCapabilitiesTool } from './tools/listCapabilities.js';
 import {
     addNodeTool,
     connectNodesTool,
+    describeNodePropertiesTool,
     disconnectNodesTool,
     editNodePropertiesTool,
     listCurrentNodesTool,
@@ -166,6 +167,19 @@ const TOOLS: Tool[] = [
                 },
             },
             required: ['nodeId', 'properties'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'describe_node_properties',
+        description:
+            'Describe allowed properties for a node (name, type, options, bounds, current value) so agents can edit safely.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeId: { type: 'string' },
+            },
+            required: ['nodeId'],
             additionalProperties: false,
         },
     },
@@ -334,6 +348,15 @@ export async function startMcpServer(): Promise<void> {
                 const response = await editNodePropertiesTool(runtime, {
                     nodeId: args.nodeId as string,
                     properties: args.properties as Record<string, unknown>,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'describe_node_properties') {
+                const response = await describeNodePropertiesTool(runtime, {
+                    nodeId: args.nodeId as string,
                 });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],

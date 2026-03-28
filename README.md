@@ -19,6 +19,7 @@ Available tools:
 - `remove_node`
 - `move_node`
 - `edit_node_properties`
+- `describe_node_properties`
 - `connect_nodes`
 - `disconnect_nodes`
 - `move_cursor`
@@ -140,6 +141,7 @@ Semantics:
 - `remove_node`: validated wrapper over `deleteNode`
 - `move_node`: validated wrapper over `moveNode`
 - `edit_node_properties`: validated wrapper over `updateNodeProperties`
+- `describe_node_properties`: returns allowed property schema and current values for a node
 - `connect_nodes`: validated wrapper over `addConnection`
 - `disconnect_nodes`: validated wrapper over `deleteConnection`
 - `move_cursor`: emits collaboration cursor updates
@@ -150,6 +152,14 @@ Semantics:
 - it resolves the current node types from `list_current_nodes` state,
 - resolves port definitions from `list_nodes` catalog,
 - rejects the call when output/input port types are incompatible.
+
+### Safe property editing flow
+
+Before calling `edit_node_properties`, call `describe_node_properties`:
+- resolve allowed property names for the exact node type,
+- inspect expected value types (`number`, `boolean`, `select`, etc.),
+- inspect allowed `select` options and numeric bounds,
+- inspect current value/mode to avoid invalid updates.
 
 ## Security model
 

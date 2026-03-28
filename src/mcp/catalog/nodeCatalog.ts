@@ -14,6 +14,9 @@ export interface NodePropertyMetadata {
     type?: string;
     defaultValue?: unknown;
     category?: string;
+    options?: unknown[];
+    min?: number;
+    max?: number;
 }
 
 export interface NodeMetadataEntry {

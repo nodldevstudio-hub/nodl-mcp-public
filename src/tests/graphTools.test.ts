@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
     addNodeTool,
     connectNodesTool,
+    describeNodePropertiesTool,
     listCurrentNodesTool,
     listNodesTool,
     moveCursorTool,
@@ -130,4 +131,32 @@ test('list_nodes applies limit and returns lightweight summary by default', asyn
             false,
         );
     }
+});
+
+test('describe_node_properties returns allowed schema and current values', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.noise1 = {
+        nodeId: 'noise1',
+        nodeType: 'noise',
+        properties: {
+            type: { value: 'Perlin 3D', mode: 'value' },
+            seed: { value: 666, mode: 'value' },
+        },
+    };
+
+    const response = await describeNodePropertiesTool(runtime as never, {
+        nodeId: 'noise1',
+    });
+
+    assert.equal(response.nodeId, 'noise1');
+    assert.equal(response.nodeType, 'noise');
+    const properties = response.properties as Array<Record<string, unknown>>;
+    const typeProp = properties.find((p) => p.name === 'type');
+    const seedProp = properties.find((p) => p.name === 'seed');
+
+    assert.ok(typeProp);
+    assert.equal(typeProp?.currentValue, 'Perlin 3D');
+    assert.ok(Array.isArray(typeProp?.options));
+    assert.ok(seedProp);
+    assert.equal(seedProp?.currentValue, 666);
 });

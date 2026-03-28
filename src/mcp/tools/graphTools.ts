@@ -3,7 +3,11 @@
     findPort,
     isConnectionTypeCompatible,
 } from '../catalog/typeCompatibility.js';
-import { loadNodeCatalog, NodeMetadataEntry } from '../catalog/nodeCatalog.js';
+import {
+    loadNodeCatalog,
+    NodeMetadataEntry,
+    NodePropertyMetadata,
+} from '../catalog/nodeCatalog.js';
 import { MUTATION_TYPES } from '../constants/mutationTypes.js';
 import { CollaborationRuntime } from '../../runtime/collaborationRuntime.js';
 
@@ -71,6 +75,10 @@ export interface MoveCursorArgs {
     x: number;
     y: number;
     displayName?: string;
+}
+
+export interface DescribeNodePropertiesArgs {
+    nodeId: string;
 }
 
 export async function listNodesTool(args?: ListNodesArgs): Promise<ListNodesResult> {
@@ -187,16 +195,92 @@ export async function editNodePropertiesTool(
 ): Promise<Record<string, unknown>> {
     assertNonEmptyString(args.nodeId, 'nodeId');
     assertNonEmptyObject(args.properties, 'properties');
+    const normalizedProperties = await normalizeAndValidateNodeProperties(
+        runtime,
+        args.nodeId,
+        args.properties
+    );
 
     const result = await runtime.applyMutation(
         MUTATION_TYPES.updateNodeProperties,
         {
             nodeId: args.nodeId,
-            properties: args.properties,
+            properties: normalizedProperties,
         },
     );
 
     return formatAck(result);
+}
+
+export async function describeNodePropertiesTool(
+    runtime: CollaborationRuntime,
+    args: DescribeNodePropertiesArgs,
+): Promise<Record<string, unknown>> {
+    assertNonEmptyString(args.nodeId, 'nodeId');
+
+    const state = runtime.getGraphSessionState();
+    const targetNode = state.nodes[args.nodeId] as Record<string, unknown> | undefined;
+    if (!targetNode) {
+        throw new Error(
+            `describe_node_properties requires node '${args.nodeId}' to exist in current session state.`,
+        );
+    }
+
+    const nodeType =
+        (typeof targetNode.nodeType === 'string' && targetNode.nodeType) ||
+        (typeof targetNode.type === 'string' && targetNode.type) ||
+        null;
+
+    if (!nodeType) {
+        throw new Error(`Cannot resolve node type for node '${args.nodeId}'.`);
+    }
+
+    const catalog = await loadNodeCatalog();
+    const nodeMeta = findNodeCatalogEntry(catalog, nodeType);
+    if (!nodeMeta) {
+        throw new Error(`Unknown node type in catalog: ${nodeType}`);
+    }
+
+    const currentProperties =
+        targetNode.properties && typeof targetNode.properties === 'object'
+            ? (targetNode.properties as Record<string, unknown>)
+            : {};
+
+    const properties = (nodeMeta.properties ?? []).map((prop) => {
+        const currentRaw = currentProperties[prop.name];
+        const currentObj =
+            currentRaw && typeof currentRaw === 'object'
+                ? (currentRaw as Record<string, unknown>)
+                : null;
+        const currentValue =
+            currentObj && Object.prototype.hasOwnProperty.call(currentObj, 'value')
+                ? currentObj.value
+                : currentRaw;
+        const currentMode =
+            currentObj && typeof currentObj.mode === 'string'
+                ? currentObj.mode
+                : undefined;
+
+        return {
+            name: prop.name,
+            type: prop.type ?? null,
+            category: prop.category ?? null,
+            options: Array.isArray(prop.options) ? prop.options : [],
+            min: typeof prop.min === 'number' ? prop.min : null,
+            max: typeof prop.max === 'number' ? prop.max : null,
+            defaultValue:
+                typeof prop.defaultValue === 'undefined' ? null : prop.defaultValue,
+            currentValue: typeof currentValue === 'undefined' ? null : currentValue,
+            ...(currentMode ? { currentMode } : {}),
+        };
+    });
+
+    return {
+        nodeId: args.nodeId,
+        nodeType,
+        propertyCount: properties.length,
+        properties,
+    };
 }
 
 export async function connectNodesTool(
@@ -348,4 +432,119 @@ function formatAck(result: { ok: boolean; reason?: string }): Record<string, unk
         ok: result.ok,
         reason: result.reason ?? null,
     };
+}
+
+async function normalizeAndValidateNodeProperties(
+    runtime: CollaborationRuntime,
+    nodeId: string,
+    properties: Record<string, unknown>
+): Promise<Record<string, unknown>> {
+    const state = runtime.getGraphSessionState();
+    const targetNode = state.nodes[nodeId] as Record<string, unknown> | undefined;
+    if (!targetNode) {
+        throw new Error(
+            `edit_node_properties requires node '${nodeId}' to exist in current session state.`,
+        );
+    }
+
+    const nodeType =
+        (typeof targetNode.nodeType === 'string' && targetNode.nodeType) ||
+        (typeof targetNode.type === 'string' && targetNode.type) ||
+        null;
+
+    if (!nodeType) {
+        throw new Error(
+            `Cannot resolve node type for node '${nodeId}'.`,
+        );
+    }
+
+    const catalog = await loadNodeCatalog();
+    const nodeMeta = findNodeCatalogEntry(catalog, nodeType);
+    if (!nodeMeta) {
+        throw new Error(`Unknown node type in catalog: ${nodeType}`);
+    }
+
+    const normalized: Record<string, unknown> = {};
+    const availableProps = nodeMeta.properties ?? [];
+    for (const [requestedKey, rawValue] of Object.entries(properties)) {
+        const propertyMeta =
+            availableProps.find((prop) => prop.name === requestedKey) ??
+            availableProps.find(
+                (prop) => prop.name.toLowerCase() === requestedKey.toLowerCase()
+            );
+
+        if (!propertyMeta) {
+            throw new Error(
+                `Unknown property '${requestedKey}' for node type '${nodeType}'.`,
+            );
+        }
+
+        normalized[propertyMeta.name] = coerceAndValidatePropertyValue(
+            propertyMeta,
+            rawValue,
+            nodeType,
+        );
+    }
+
+    return normalized;
+}
+
+function coerceAndValidatePropertyValue(
+    property: NodePropertyMetadata,
+    rawValue: unknown,
+    nodeType: string
+): unknown {
+    const propertyType = (property.type ?? '').toLowerCase();
+
+    if (propertyType === 'number') {
+        if (typeof rawValue !== 'number' || !Number.isFinite(rawValue)) {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: expected a finite number.`,
+            );
+        }
+        return rawValue;
+    }
+
+    if (propertyType === 'boolean') {
+        if (typeof rawValue !== 'boolean') {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: expected a boolean.`,
+            );
+        }
+        return rawValue;
+    }
+
+    if (propertyType === 'select') {
+        if (typeof rawValue !== 'string') {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: expected a string option.`,
+            );
+        }
+
+        const options = Array.isArray(property.options)
+            ? property.options.filter((option): option is string => typeof option === 'string')
+            : [];
+
+        if (options.length === 0) {
+            return rawValue;
+        }
+
+        const exact = options.find((option) => option === rawValue);
+        if (exact) {
+            return exact;
+        }
+
+        const caseInsensitive = options.find(
+            (option) => option.toLowerCase() === rawValue.toLowerCase()
+        );
+        if (caseInsensitive) {
+            return caseInsensitive;
+        }
+
+        throw new Error(
+            `Invalid option for ${nodeType}.${property.name}: '${rawValue}'. Allowed: ${options.join(', ')}.`,
+        );
+    }
+
+    return rawValue;
 }
