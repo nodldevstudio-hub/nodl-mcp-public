@@ -14,7 +14,10 @@ export async function joinProjectTool(
     runtime: CollaborationRuntime,
     args: JoinProjectArgs,
 ): Promise<Record<string, unknown>> {
-    const endpoint = args.endpoint ?? 'wss://realtime.nodl.dev';
+    const endpoint =
+        args.endpoint ??
+        process.env.NODL_COLLAB_ENDPOINT ??
+        'wss://realtime.nodl.dev';
     const resolvedToken = resolveToken(args.token, { requireNotExpired: true });
     assertTokenProjectMatch(resolvedToken.claims.projectId, args.projectId);
 

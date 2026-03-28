@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { startMcpServer } from './mcp/server.js';
 
 async function main(): Promise<void> {

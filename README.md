@@ -37,13 +37,23 @@ Notes:
 
 ## First usage flow
 
-1. Generate a collaboration token in Nodl app (Share / collaboration token endpoint).
+1. Generate an MCP agent token in Nodl app (`Share -> Collaborate -> MCP token`).
 2. In your AI client, call `join_project`:
    - `projectId`: project id
    - `token`: short-lived token
-   - `endpoint` (optional): defaults to `wss://realtime.nodl.dev`
+   - `endpoint` (optional): defaults to `NODL_COLLAB_ENDPOINT` env var, else `wss://realtime.nodl.dev`
 3. Call `list_capabilities` to confirm role/scopes/expiry.
 4. Call `apply_graph_mutation`.
+
+## Endpoint override with `.env` (dev)
+
+Create a local `.env` file (not committed) at package root:
+
+```env
+NODL_COLLAB_ENDPOINT=ws://localhost:1235/collaboration
+```
+
+This override is automatically loaded on startup (`dotenv/config`).
 
 ## Tool contracts
 
@@ -55,7 +65,7 @@ Input:
 {
   "projectId": "42",
   "token": "<short-lived-token>",
-  "endpoint": "wss://realtime.nodl.dev"
+  "endpoint": "ws://localhost:1235/collaboration"
 }
 ```
 
@@ -120,7 +130,7 @@ This is CI/package publishing configuration, not MCP runtime usage.
 Check:
 - token not expired
 - token project matches `projectId`
-- endpoint is correct (`wss://realtime.nodl.dev` by default)
+- endpoint is correct (`NODL_COLLAB_ENDPOINT` env var or `wss://realtime.nodl.dev` by default)
 - role/scopes allow requested actions
 
 ### `apply_graph_mutation` returns rejected

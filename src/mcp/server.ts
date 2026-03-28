@@ -29,7 +29,7 @@ const TOOLS: Tool[] = [
                 endpoint: {
                     type: 'string',
                     description:
-                        'Public realtime endpoint base URL. Defaults to wss://realtime.nodl.dev',
+                        'Realtime endpoint base URL. Defaults to NODL_COLLAB_ENDPOINT env var or wss://realtime.nodl.dev',
                 },
             },
             required: ['projectId', 'token'],
