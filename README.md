@@ -37,7 +37,7 @@ npm start
 After publishing:
 
 ```bash
-npx @nodldevstudio-hub/nodl-collab-mcp
+npx nodl-collab-mcp
 ```
 
 ## CI publish (GitHub Actions + environment secret)
@@ -58,3 +58,4 @@ Trigger options:
 ```bash
 npm publish --access public
 ```
+

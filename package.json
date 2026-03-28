@@ -1,5 +1,5 @@
 {
-  "name": "@nodldevstudio-hub/nodl-collab-mcp",
+  "name": "nodl-collab-mcp",
   "version": "0.1.3",
   "description": "Public MCP server for Nodl collaboration via public endpoints and user-provided tokens.",
   "type": "module",
@@ -42,3 +42,4 @@
     "typescript": "^5.8.3"
   }
 }
+
