@@ -22,7 +22,6 @@ Available tools:
 - `connect_nodes`
 - `disconnect_nodes`
 - `move_cursor`
-- `apply_graph_mutation`
 
 ## Install in your MCP client (JSON config)
 
@@ -52,7 +51,6 @@ Notes:
    - `endpoint` (optional): set to your production backend collaboration namespace (example: `wss://api.nodl.dev/collaboration`)
 3. Call `list_capabilities` to confirm role/scopes/expiry.
 4. Use dedicated tools for common graph operations (`add_node`, `move_node`, `connect_nodes`, ...).
-5. Use `apply_graph_mutation` for expert/fallback raw operations.
 
 ## Endpoint override with `.env` (production)
 
@@ -101,24 +99,6 @@ Output:
 - role
 - scopes
 - expiration status
-
-### `apply_graph_mutation`
-
-Input:
-
-```json
-{
-  "type": "addNode",
-  "payload": {
-    "id": "node-1",
-    "data": { "type": "math/add" }
-  }
-}
-```
-
-Output:
-- `ok: true|false`
-- optional `reason` when rejected
 
 ### `list_nodes`
 
@@ -195,13 +175,6 @@ Check:
 - token not expired
 - endpoint is correct (`endpoint` argument has priority, then `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL`)
 - role/scopes allow requested actions
-
-### `apply_graph_mutation` returns rejected
-
-Likely causes:
-- role is `viewer`
-- missing `collab:write` scope
-- project is not in websocket mode
 
 ## Local development
 

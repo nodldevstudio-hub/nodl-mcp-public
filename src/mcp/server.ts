@@ -8,7 +8,6 @@ import {
 import { CollaborationRuntime } from '../runtime/collaborationRuntime.js';
 import { joinProjectTool } from './tools/joinProject.js';
 import { listCapabilitiesTool } from './tools/listCapabilities.js';
-import { applyGraphMutationTool } from './tools/applyGraphMutation.js';
 import {
     addNodeTool,
     connectNodesTool,
@@ -65,10 +64,29 @@ const TOOLS: Tool[] = [
     },
     {
         name: 'list_nodes',
-        description: 'List the local node catalog (type/category/ports/properties).',
+        description:
+            'List node catalog with optional filtering/limits (defaults to lightweight summary to avoid oversized outputs).',
         inputSchema: {
             type: 'object',
-            properties: {},
+            properties: {
+                query: {
+                    type: 'string',
+                    description:
+                        'Optional search term (matches nodeType/displayName/category).',
+                },
+                limit: {
+                    type: 'number',
+                    description: 'Max items to return (default 40, max 200).',
+                },
+                includePorts: {
+                    type: 'boolean',
+                    description: 'Include full input/output port metadata.',
+                },
+                includeProperties: {
+                    type: 'boolean',
+                    description: 'Include full node properties metadata.',
+                },
+            },
             additionalProperties: false,
         },
     },
@@ -202,25 +220,6 @@ const TOOLS: Tool[] = [
             additionalProperties: false,
         },
     },
-    {
-        name: 'apply_graph_mutation',
-        description:
-            'Apply a raw graph mutation to the active joined room. Expert/fallback tool when dedicated tools do not cover a case.',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                type: {
-                    type: 'string',
-                    description: 'Mutation type (addNode, moveNode, deleteNode, ...)',
-                },
-                payload: {
-                    description: 'Structured mutation payload',
-                },
-            },
-            required: ['type', 'payload'],
-            additionalProperties: false,
-        },
-    },
 ];
 
 function getStringArg(args: Record<string, unknown>, key: string): string {
@@ -280,7 +279,12 @@ export async function startMcpServer(): Promise<void> {
             }
 
             if (name === 'list_nodes') {
-                const response = await listNodesTool();
+                const response = await listNodesTool({
+                    query: typeof args.query === 'string' ? args.query : undefined,
+                    limit: typeof args.limit === 'number' ? args.limit : undefined,
+                    includePorts: args.includePorts === true,
+                    includeProperties: args.includeProperties === true,
+                });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
                 };
@@ -381,16 +385,6 @@ export async function startMcpServer(): Promise<void> {
                         typeof args.displayName === 'string'
                             ? args.displayName
                             : undefined,
-                });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
-            }
-
-            if (name === 'apply_graph_mutation') {
-                const response = await applyGraphMutationTool(runtime, {
-                    type: getStringArg(args, 'type'),
-                    payload: args.payload,
                 });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],

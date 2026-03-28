@@ -3,12 +3,19 @@
     findPort,
     isConnectionTypeCompatible,
 } from '../catalog/typeCompatibility.js';
-import { loadNodeCatalog } from '../catalog/nodeCatalog.js';
+import { loadNodeCatalog, NodeMetadataEntry } from '../catalog/nodeCatalog.js';
 import { MUTATION_TYPES } from '../constants/mutationTypes.js';
 import { CollaborationRuntime } from '../../runtime/collaborationRuntime.js';
 
 export interface ListNodesResult {
     nodes: unknown[];
+}
+
+export interface ListNodesArgs {
+    query?: string;
+    limit?: number;
+    includePorts?: boolean;
+    includeProperties?: boolean;
 }
 
 export interface ListCurrentNodesResult {
@@ -66,9 +73,51 @@ export interface MoveCursorArgs {
     displayName?: string;
 }
 
-export async function listNodesTool(): Promise<ListNodesResult> {
+export async function listNodesTool(args?: ListNodesArgs): Promise<ListNodesResult> {
     const catalog = await loadNodeCatalog();
-    return { nodes: catalog };
+    const query =
+        typeof args?.query === 'string' && args.query.trim().length > 0
+            ? args.query.trim().toLowerCase()
+            : null;
+    const requestedLimit =
+        typeof args?.limit === 'number' && Number.isFinite(args.limit)
+            ? Math.floor(args.limit)
+            : 40;
+    const limit = Math.min(Math.max(requestedLimit, 1), 200);
+    const includePorts = args?.includePorts === true;
+    const includeProperties = args?.includeProperties === true;
+
+    const filtered = query
+        ? catalog.filter((entry) => {
+              const nodeType = String(entry.type ?? '').toLowerCase();
+              const category = String(entry.category ?? '').toLowerCase();
+              const displayName = String(entry.displayName ?? '').toLowerCase();
+              return (
+                  nodeType.includes(query) ||
+                  category.includes(query) ||
+                  displayName.includes(query)
+              );
+          })
+        : catalog;
+
+    const nodes = filtered.slice(0, limit).map((entry: NodeMetadataEntry) => {
+        const result: Record<string, unknown> = {
+            nodeType: entry.type ?? null,
+            displayName: entry.displayName ?? null,
+            category: entry.category ?? null,
+            tags: entry.tags ?? [],
+        };
+        if (includePorts) {
+            result.inputs = entry.inputs ?? [];
+            result.outputs = entry.outputs ?? [];
+        }
+        if (includeProperties) {
+            result.properties = entry.properties ?? [];
+        }
+        return result;
+    });
+
+    return { nodes };
 }
 
 export function listCurrentNodesTool(

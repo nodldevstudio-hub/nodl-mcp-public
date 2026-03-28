@@ -4,6 +4,7 @@ import {
     addNodeTool,
     connectNodesTool,
     listCurrentNodesTool,
+    listNodesTool,
     moveCursorTool,
 } from '../mcp/tools/graphTools.js';
 import {
@@ -113,4 +114,20 @@ test('move_cursor maps to collaboration cursor event payload', async () => {
 
     assert.deepEqual(response, { ok: true, reason: null });
     assert.deepEqual(runtime.cursorPayload, { x: 15, y: 25 });
+});
+
+test('list_nodes applies limit and returns lightweight summary by default', async () => {
+    const response = await listNodesTool({ query: 'noise', limit: 5 });
+    assert.ok(Array.isArray(response.nodes));
+    assert.ok(response.nodes.length <= 5);
+
+    const first = response.nodes[0] as Record<string, unknown> | undefined;
+    if (first) {
+        assert.equal(typeof first.nodeType, 'string');
+        assert.equal(Object.prototype.hasOwnProperty.call(first, 'inputs'), false);
+        assert.equal(
+            Object.prototype.hasOwnProperty.call(first, 'properties'),
+            false,
+        );
+    }
 });
