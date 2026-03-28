@@ -61,7 +61,8 @@ export class CollaborationRuntime {
                 .emit(
                     'collaboration:join',
                     {},
-                    (err: unknown, response: any) => {
+                    (arg1: unknown, arg2?: unknown) => {
+                        const { err, response } = this.parseAck(arg1, arg2);
                         if (err) {
                             reject(new Error('join timeout or rejection'));
                             return;
@@ -131,7 +132,8 @@ export class CollaborationRuntime {
                         type,
                         payload,
                     },
-                    (err: unknown, response: any) => {
+                    (arg1: unknown, arg2?: unknown) => {
+                        const { err, response } = this.parseAck(arg1, arg2);
                         if (err) {
                             reject(new Error('mutation timeout or rejection'));
                             return;
@@ -183,7 +185,8 @@ export class CollaborationRuntime {
                         userName,
                         ...payload,
                     },
-                    (err: unknown, response: any) => {
+                    (arg1: unknown, arg2?: unknown) => {
+                        const { err, response } = this.parseAck(arg1, arg2);
                         if (err) {
                             reject(new Error('cursor event timeout or rejection'));
                             return;
@@ -231,5 +234,18 @@ export class CollaborationRuntime {
             return trimmed;
         }
         return `${trimmed}/collaboration`;
+    }
+
+    private parseAck(
+        arg1: unknown,
+        arg2?: unknown,
+    ): { err: unknown; response: any } {
+        // Socket.IO client ACK callbacks can be either:
+        // - (err, response) when using timeout error-first style
+        // - (response) in some runtimes/proxies
+        if (typeof arg2 !== 'undefined') {
+            return { err: arg1, response: arg2 as any };
+        }
+        return { err: null, response: arg1 as any };
     }
 }

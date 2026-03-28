@@ -85,6 +85,7 @@ Output:
 - decoded token metadata (`scopes`, `exp`)
 - cursor identity metadata (`actorId`, `displayName`) used by `move_cursor`
 - fails fast if token is expired or token has no `projectId` claim
+- ACK handling supports both Socket.IO callback shapes to avoid false `join timeout or rejection` errors.
 
 ### `list_capabilities`
 
