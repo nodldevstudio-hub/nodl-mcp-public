@@ -471,6 +471,11 @@ async function normalizeAndValidateNodeProperties(
             availableProps.find((prop) => prop.name === requestedKey) ??
             availableProps.find(
                 (prop) => prop.name.toLowerCase() === requestedKey.toLowerCase()
+            ) ??
+            availableProps.find(
+                (prop) =>
+                    normalizePropertyKey(prop.name) ===
+                    normalizePropertyKey(requestedKey)
             );
 
         if (!propertyMeta) {
@@ -500,6 +505,16 @@ function coerceAndValidatePropertyValue(
         if (typeof rawValue !== 'number' || !Number.isFinite(rawValue)) {
             throw new Error(
                 `Invalid value for ${nodeType}.${property.name}: expected a finite number.`,
+            );
+        }
+        if (typeof property.min === 'number' && rawValue < property.min) {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: must be >= ${property.min}.`,
+            );
+        }
+        if (typeof property.max === 'number' && rawValue > property.max) {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: must be <= ${property.max}.`,
             );
         }
         return rawValue;
@@ -546,5 +561,94 @@ function coerceAndValidatePropertyValue(
         );
     }
 
+    const vectorMatch = propertyType.match(/^vector([234])$/);
+    if (vectorMatch) {
+        const dimensions = Number(vectorMatch[1]);
+        return coerceVectorValue(rawValue, dimensions, property, nodeType);
+    }
+
     return rawValue;
+}
+
+function normalizePropertyKey(input: string): string {
+    return input.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function coerceVectorValue(
+    rawValue: unknown,
+    dimensions: number,
+    property: NodePropertyMetadata,
+    nodeType: string
+): Record<string, number> {
+    const keys = ['x', 'y', 'z', 'w'].slice(0, dimensions);
+
+    let values: number[] | null = null;
+    if (Array.isArray(rawValue)) {
+        if (rawValue.length !== dimensions) {
+            throw new Error(
+                `Invalid value for ${nodeType}.${property.name}: expected array of length ${dimensions}.`,
+            );
+        }
+        values = rawValue.map((v) => {
+            if (typeof v !== 'number' || !Number.isFinite(v)) {
+                throw new Error(
+                    `Invalid value for ${nodeType}.${property.name}: vector components must be finite numbers.`,
+                );
+            }
+            return v;
+        });
+    } else if (rawValue && typeof rawValue === 'object') {
+        const source = rawValue as Record<string, unknown>;
+        const aliases: Record<string, string[]> = {
+            x: ['x', 'r'],
+            y: ['y', 'g'],
+            z: ['z', 'b'],
+            w: ['w', 'a'],
+        };
+        values = keys.map((key) => {
+            const aliasList = aliases[key] ?? [key];
+            let component: unknown = undefined;
+            for (const alias of aliasList) {
+                if (Object.prototype.hasOwnProperty.call(source, alias)) {
+                    component = source[alias];
+                    break;
+                }
+            }
+            if (typeof component !== 'number' || !Number.isFinite(component)) {
+                throw new Error(
+                    `Invalid value for ${nodeType}.${property.name}: missing/invalid component '${key}'.`,
+                );
+            }
+            return component;
+        });
+    }
+
+    if (!values) {
+        throw new Error(
+            `Invalid value for ${nodeType}.${property.name}: expected vector${dimensions} object or array.`,
+        );
+    }
+
+    const min = typeof property.min === 'number' ? property.min : null;
+    const max = typeof property.max === 'number' ? property.max : null;
+    if (min !== null || max !== null) {
+        values.forEach((value, index) => {
+            if (min !== null && value < min) {
+                throw new Error(
+                    `Invalid value for ${nodeType}.${property.name}: component '${keys[index]}' must be >= ${min}.`,
+                );
+            }
+            if (max !== null && value > max) {
+                throw new Error(
+                    `Invalid value for ${nodeType}.${property.name}: component '${keys[index]}' must be <= ${max}.`,
+                );
+            }
+        });
+    }
+
+    const vector: Record<string, number> = {};
+    keys.forEach((key, index) => {
+        vector[key] = values?.[index] ?? 0;
+    });
+    return vector;
 }

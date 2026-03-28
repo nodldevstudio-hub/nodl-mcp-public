@@ -4,6 +4,7 @@ import {
     addNodeTool,
     connectNodesTool,
     describeNodePropertiesTool,
+    editNodePropertiesTool,
     listCurrentNodesTool,
     listNodesTool,
     moveCursorTool,
@@ -159,4 +160,44 @@ test('describe_node_properties returns allowed schema and current values', async
     assert.ok(Array.isArray(typeProp?.options));
     assert.ok(seedProp);
     assert.equal(seedProp?.currentValue, 666);
+});
+
+test('edit_node_properties accepts normalized property names and vector aliases', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.noise2 = {
+        nodeId: 'noise2',
+        nodeType: 'noise',
+    };
+
+    const response = await editNodePropertiesTool(runtime as never, {
+        nodeId: 'noise2',
+        properties: {
+            colorA: { r: 1, g: 0, b: 0, a: 1 },
+        },
+    });
+
+    assert.deepEqual(response, { ok: true, reason: null });
+    assert.equal(runtime.lastMutation?.type, 'updateNodeProperties');
+    const payload = runtime.lastMutation?.payload as Record<string, unknown>;
+    const props = payload.properties as Record<string, unknown>;
+    assert.ok(props['Color A']);
+    assert.deepEqual(props['Color A'], { x: 1, y: 0, z: 0, w: 1 });
+});
+
+test('edit_node_properties rejects out-of-range vector component values', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.noise2 = {
+        nodeId: 'noise2',
+        nodeType: 'noise',
+    };
+
+    await assert.rejects(
+        editNodePropertiesTool(runtime as never, {
+            nodeId: 'noise2',
+            properties: {
+                colorA: { x: 2, y: 0, z: 0, w: 1 },
+            },
+        }),
+        /must be <= 1/,
+    );
 });
