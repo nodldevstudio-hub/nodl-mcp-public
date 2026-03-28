@@ -50,7 +50,7 @@ Notes:
 2. In your AI client, call `join_project`:
    - `projectId`: project id
    - `token`: short-lived token
-   - `endpoint` (optional): defaults to `NODL_COLLAB_ENDPOINT` env var, else `wss://realtime.nodl.dev`
+   - `endpoint` (optional): defaults to `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL` env var, else `ws://localhost:1235/collaboration`
 3. Call `list_capabilities` to confirm role/scopes/expiry.
 4. Use dedicated tools for common graph operations (`add_node`, `move_node`, `connect_nodes`, ...).
 5. Use `apply_graph_mutation` for expert/fallback raw operations.
@@ -193,7 +193,7 @@ This is CI/package publishing configuration, not MCP runtime usage.
 Check:
 - token not expired
 - token project matches `projectId`
-- endpoint is correct (`NODL_COLLAB_ENDPOINT` env var or `wss://realtime.nodl.dev` by default)
+- endpoint is correct (`endpoint` argument has priority, then `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL`, then `ws://localhost:1235/collaboration`)
 - role/scopes allow requested actions
 
 ### `apply_graph_mutation` returns rejected

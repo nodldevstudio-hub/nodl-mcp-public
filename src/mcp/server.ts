@@ -40,7 +40,7 @@ const TOOLS: Tool[] = [
                 endpoint: {
                     type: 'string',
                     description:
-                        'Realtime endpoint base URL. Defaults to NODL_COLLAB_ENDPOINT env var or wss://realtime.nodl.dev',
+                        'Realtime endpoint base URL. Defaults to NODL_COLLAB_ENDPOINT/COLLAB_SECURE_WS_URL env var, else ws://localhost:1235/collaboration',
                 },
                 displayName: {
                     type: 'string',

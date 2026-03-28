@@ -15,10 +15,7 @@ export async function joinProjectTool(
     runtime: CollaborationRuntime,
     args: JoinProjectArgs,
 ): Promise<Record<string, unknown>> {
-    const endpoint =
-        args.endpoint ??
-        process.env.NODL_COLLAB_ENDPOINT ??
-        'wss://realtime.nodl.dev';
+    const endpoint = resolveEndpoint(args.endpoint);
     const resolvedToken = resolveToken(args.token, { requireNotExpired: true });
     assertTokenProjectMatch(resolvedToken.claims.projectId, args.projectId);
 
@@ -41,6 +38,7 @@ export async function joinProjectTool(
 
     return {
         ok: true,
+        endpointUsed: endpoint,
         session: joinResult,
         token: {
             actorType: resolvedToken.claims.actorType ?? null,
@@ -56,4 +54,22 @@ export async function joinProjectTool(
             note: 'Token is only held in memory for the active MCP process.',
         },
     };
+}
+
+function resolveEndpoint(explicitEndpoint?: string): string {
+    const envEndpointCandidates = [
+        process.env.NODL_COLLAB_ENDPOINT,
+        process.env.COLLAB_SECURE_WS_URL,
+        process.env.NODL_REALTIME_ENDPOINT,
+    ];
+
+    const firstEnvEndpoint = envEndpointCandidates.find(
+        (candidate) => typeof candidate === 'string' && candidate.trim().length > 0,
+    );
+
+    return (
+        explicitEndpoint ??
+        firstEnvEndpoint ??
+        'ws://localhost:1235/collaboration'
+    );
 }
