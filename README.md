@@ -75,13 +75,15 @@ Input:
 {
   "projectId": "42",
   "token": "<short-lived-token>",
-  "endpoint": "ws://localhost:1235/collaboration"
+  "endpoint": "ws://localhost:1235/collaboration",
+  "displayName": "MCP - Claude"
 }
 ```
 
 Output:
 - `session` (`projectId`, `mode`, `role`)
 - decoded token metadata (`scopes`, `exp`)
+- cursor identity metadata (`actorId`, `displayName`) used by `move_cursor`
 - fails fast if token is expired or token project does not match requested project
 
 ### `list_capabilities`

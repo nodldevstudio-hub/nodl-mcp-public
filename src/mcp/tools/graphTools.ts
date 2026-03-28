@@ -63,6 +63,7 @@ export interface DisconnectNodesArgs {
 export interface MoveCursorArgs {
     x: number;
     y: number;
+    displayName?: string;
 }
 
 export async function listNodesTool(): Promise<ListNodesResult> {
@@ -260,7 +261,13 @@ export async function moveCursorTool(
     assertFiniteNumber(args.x, 'x');
     assertFiniteNumber(args.y, 'y');
 
-    const result = await runtime.moveCursor({ x: args.x, y: args.y });
+    const result = await runtime.moveCursor({
+        x: args.x,
+        y: args.y,
+        ...(typeof args.displayName === 'string'
+            ? { displayName: args.displayName }
+            : {}),
+    });
     return formatAck(result);
 }
 

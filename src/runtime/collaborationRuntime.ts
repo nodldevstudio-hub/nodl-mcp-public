@@ -22,6 +22,15 @@ export class CollaborationRuntime {
     private currentProjectId: string | null = null;
     private endpoint: string | null = null;
     private graphSessionState: GraphSessionState = createEmptyGraphSessionState();
+    private cursorIdentity: {
+        actorId: string | null;
+        actorType: string | null;
+        displayName: string | null;
+    } = {
+        actorId: null,
+        actorType: null,
+        displayName: null,
+    };
 
     async joinSession(input: JoinSessionInput): Promise<JoinSessionResult> {
         await this.disconnect();
@@ -89,6 +98,26 @@ export class CollaborationRuntime {
         return joinAck;
     }
 
+    setCursorIdentity(identity: {
+        actorId?: string | null;
+        actorType?: string | null;
+        displayName?: string | null;
+    }): void {
+        this.cursorIdentity = {
+            actorId:
+                typeof identity.actorId === 'string' ? identity.actorId : null,
+            actorType:
+                typeof identity.actorType === 'string'
+                    ? identity.actorType
+                    : null,
+            displayName:
+                typeof identity.displayName === 'string' &&
+                identity.displayName.trim().length > 0
+                    ? identity.displayName.trim()
+                    : null,
+        };
+    }
+
     async applyMutation(type: string, payload: unknown): Promise<{ ok: boolean; reason?: string }> {
         if (!this.socket || !this.currentProjectId) {
             throw new Error('No active collaboration session. Call join_project first.');
@@ -131,6 +160,18 @@ export class CollaborationRuntime {
             throw new Error('No active collaboration session. Call join_project first.');
         }
 
+        const displayName =
+            typeof payload.displayName === 'string' &&
+            payload.displayName.trim().length > 0
+                ? payload.displayName.trim()
+                : this.cursorIdentity.displayName;
+
+        const userName =
+            typeof payload.userName === 'string' &&
+            payload.userName.trim().length > 0
+                ? payload.userName.trim()
+                : displayName;
+
         const ack = await new Promise<{ ok: boolean; reason?: string }>((resolve, reject) => {
             this.socket
                 ?.timeout(5000)
@@ -138,6 +179,11 @@ export class CollaborationRuntime {
                     'collaboration:cursor',
                     {
                         projectId: Number(this.currentProjectId),
+                        id: this.cursorIdentity.actorId,
+                        actorId: this.cursorIdentity.actorId,
+                        actorType: this.cursorIdentity.actorType,
+                        displayName,
+                        userName,
                         ...payload,
                     },
                     (err: unknown, response: any) => {
@@ -164,6 +210,11 @@ export class CollaborationRuntime {
         this.currentProjectId = null;
         this.endpoint = null;
         this.graphSessionState = createEmptyGraphSessionState();
+        this.cursorIdentity = {
+            actorId: null,
+            actorType: null,
+            displayName: null,
+        };
     }
 
     getSessionInfo(): { projectId: string | null; endpoint: string | null } {

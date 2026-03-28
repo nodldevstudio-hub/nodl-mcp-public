@@ -42,6 +42,11 @@ const TOOLS: Tool[] = [
                     description:
                         'Realtime endpoint base URL. Defaults to NODL_COLLAB_ENDPOINT env var or wss://realtime.nodl.dev',
                 },
+                displayName: {
+                    type: 'string',
+                    description:
+                        'Optional display name used for MCP cursor presence (fallback: token displayName).',
+                },
             },
             required: ['projectId', 'token'],
             additionalProperties: false,
@@ -191,6 +196,11 @@ const TOOLS: Tool[] = [
             properties: {
                 x: { type: 'number' },
                 y: { type: 'number' },
+                displayName: {
+                    type: 'string',
+                    description:
+                        'Optional display name override for this cursor event.',
+                },
             },
             required: ['x', 'y'],
             additionalProperties: false,
@@ -255,6 +265,10 @@ export async function startMcpServer(): Promise<void> {
                     token: getStringArg(args, 'token'),
                     endpoint:
                         typeof args.endpoint === 'string' ? args.endpoint : undefined,
+                    displayName:
+                        typeof args.displayName === 'string'
+                            ? args.displayName
+                            : undefined,
                 });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
@@ -368,6 +382,10 @@ export async function startMcpServer(): Promise<void> {
                 const response = await moveCursorTool(runtime, {
                     x: args.x as number,
                     y: args.y as number,
+                    displayName:
+                        typeof args.displayName === 'string'
+                            ? args.displayName
+                            : undefined,
                 });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],

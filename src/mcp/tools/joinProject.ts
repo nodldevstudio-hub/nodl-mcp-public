@@ -8,6 +8,7 @@ export interface JoinProjectArgs {
     projectId: string;
     token: string;
     endpoint?: string;
+    displayName?: string;
 }
 
 export async function joinProjectTool(
@@ -27,12 +28,24 @@ export async function joinProjectTool(
         token: args.token,
     });
 
+    const displayName =
+        typeof args.displayName === 'string' && args.displayName.trim().length > 0
+            ? args.displayName.trim()
+            : resolvedToken.claims.displayName ?? null;
+
+    runtime.setCursorIdentity({
+        actorId: resolvedToken.claims.actorId ?? null,
+        actorType: resolvedToken.claims.actorType ?? null,
+        displayName,
+    });
+
     return {
         ok: true,
         session: joinResult,
         token: {
             actorType: resolvedToken.claims.actorType ?? null,
             actorId: resolvedToken.claims.actorId ?? null,
+            displayName,
             role: resolvedToken.claims.role ?? null,
             scopes: resolvedToken.claims.scopes ?? [],
             projectId: resolvedToken.claims.projectId ?? null,

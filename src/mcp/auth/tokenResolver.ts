@@ -3,6 +3,7 @@ export interface CollaborationTokenClaims {
     projectId?: number;
     actorType?: string;
     actorId?: string;
+    displayName?: string;
     role?: string;
     scopes?: string[];
 }
