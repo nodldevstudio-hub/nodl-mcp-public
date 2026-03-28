@@ -1,4 +1,9 @@
 import { io, Socket } from 'socket.io-client';
+import {
+    applyGraphMutationToState,
+    createEmptyGraphSessionState,
+    GraphSessionState,
+} from './state/graphSessionState.js';
 
 export interface JoinSessionInput {
     endpoint: string;
@@ -16,6 +21,7 @@ export class CollaborationRuntime {
     private socket: Socket | null = null;
     private currentProjectId: string | null = null;
     private endpoint: string | null = null;
+    private graphSessionState: GraphSessionState = createEmptyGraphSessionState();
 
     async joinSession(input: JoinSessionInput): Promise<JoinSessionResult> {
         await this.disconnect();
@@ -67,6 +73,19 @@ export class CollaborationRuntime {
 
         this.currentProjectId = joinAck.projectId;
         this.endpoint = input.endpoint;
+        this.graphSessionState = createEmptyGraphSessionState();
+        this.graphSessionState.initialized = true;
+        this.socket.on('collaboration:mutation', (event: any) => {
+            if (!event || typeof event.type !== 'string') {
+                return;
+            }
+            applyGraphMutationToState(
+                this.graphSessionState,
+                event.type,
+                event.payload,
+            );
+        });
+
         return joinAck;
     }
 
@@ -98,6 +117,42 @@ export class CollaborationRuntime {
                 );
         });
 
+        if (ack.ok) {
+            applyGraphMutationToState(this.graphSessionState, type, payload);
+        }
+
+        return ack;
+    }
+
+    async moveCursor(
+        payload: Record<string, unknown>,
+    ): Promise<{ ok: boolean; reason?: string }> {
+        if (!this.socket || !this.currentProjectId) {
+            throw new Error('No active collaboration session. Call join_project first.');
+        }
+
+        const ack = await new Promise<{ ok: boolean; reason?: string }>((resolve, reject) => {
+            this.socket
+                ?.timeout(5000)
+                .emit(
+                    'collaboration:cursor',
+                    {
+                        projectId: Number(this.currentProjectId),
+                        ...payload,
+                    },
+                    (err: unknown, response: any) => {
+                        if (err) {
+                            reject(new Error('cursor event timeout or rejection'));
+                            return;
+                        }
+                        resolve({
+                            ok: Boolean(response?.ok),
+                            reason: response?.reason,
+                        });
+                    },
+                );
+        });
+
         return ack;
     }
 
@@ -108,6 +163,7 @@ export class CollaborationRuntime {
         }
         this.currentProjectId = null;
         this.endpoint = null;
+        this.graphSessionState = createEmptyGraphSessionState();
     }
 
     getSessionInfo(): { projectId: string | null; endpoint: string | null } {
@@ -115,6 +171,10 @@ export class CollaborationRuntime {
             projectId: this.currentProjectId,
             endpoint: this.endpoint,
         };
+    }
+
+    getGraphSessionState(): GraphSessionState {
+        return structuredClone(this.graphSessionState);
     }
 
     private normalizeEndpoint(endpoint: string): string {

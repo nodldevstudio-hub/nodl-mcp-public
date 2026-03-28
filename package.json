@@ -9,10 +9,11 @@
     "nodl-collab-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-mcp-assets.mjs",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test dist/tests/**/*.test.js"
   },
   "files": [
     "dist",

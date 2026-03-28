@@ -1,4 +1,4 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+﻿import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
     CallToolRequestSchema,
@@ -9,6 +9,17 @@ import { CollaborationRuntime } from '../runtime/collaborationRuntime.js';
 import { joinProjectTool } from './tools/joinProject.js';
 import { listCapabilitiesTool } from './tools/listCapabilities.js';
 import { applyGraphMutationTool } from './tools/applyGraphMutation.js';
+import {
+    addNodeTool,
+    connectNodesTool,
+    disconnectNodesTool,
+    editNodePropertiesTool,
+    listCurrentNodesTool,
+    listNodesTool,
+    moveCursorTool,
+    moveNodeTool,
+    removeNodeTool,
+} from './tools/graphTools.js';
 
 const TOOLS: Tool[] = [
     {
@@ -52,9 +63,143 @@ const TOOLS: Tool[] = [
         },
     },
     {
+        name: 'list_nodes',
+        description: 'List the local node catalog (type/category/ports/properties).',
+        inputSchema: {
+            type: 'object',
+            properties: {},
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'list_current_nodes',
+        description:
+            'List current session-scoped patch state known by this MCP process (nodes + connections).',
+        inputSchema: {
+            type: 'object',
+            properties: {},
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'add_node',
+        description: 'Add a node (validated wrapper over addNode mutation).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeId: { type: 'string' },
+                nodeType: { type: 'string' },
+                position: {
+                    type: 'object',
+                    properties: {
+                        x: { type: 'number' },
+                        y: { type: 'number' },
+                    },
+                    required: ['x', 'y'],
+                    additionalProperties: false,
+                },
+                properties: {
+                    type: 'object',
+                    additionalProperties: true,
+                },
+            },
+            required: ['nodeId', 'nodeType', 'position'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'remove_node',
+        description: 'Remove a node (validated wrapper over deleteNode mutation).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeId: { type: 'string' },
+            },
+            required: ['nodeId'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'move_node',
+        description: 'Move a node (validated wrapper over moveNode mutation).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeId: { type: 'string' },
+                x: { type: 'number' },
+                y: { type: 'number' },
+            },
+            required: ['nodeId', 'x', 'y'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'edit_node_properties',
+        description:
+            'Edit one or more node properties (validated wrapper over updateNodeProperties mutation).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeId: { type: 'string' },
+                properties: {
+                    type: 'object',
+                    additionalProperties: true,
+                },
+            },
+            required: ['nodeId', 'properties'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'connect_nodes',
+        description:
+            'Connect two ports after local type-compatibility validation, then apply addConnection mutation.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                connectionId: { type: 'string' },
+                fromNodeId: { type: 'string' },
+                fromPort: { type: 'string' },
+                toNodeId: { type: 'string' },
+                toPort: { type: 'string' },
+            },
+            required: ['fromNodeId', 'fromPort', 'toNodeId', 'toPort'],
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'disconnect_nodes',
+        description:
+            'Disconnect by connectionId or by endpoint tuple (wrapper over deleteConnection mutation).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                connectionId: { type: 'string' },
+                fromNodeId: { type: 'string' },
+                fromPort: { type: 'string' },
+                toNodeId: { type: 'string' },
+                toPort: { type: 'string' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'move_cursor',
+        description: 'Broadcast a cursor position to collaborators.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+            },
+            required: ['x', 'y'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'apply_graph_mutation',
         description:
-            'Apply a graph mutation to the active joined room. Backend remains authoritative.',
+            'Apply a raw graph mutation to the active joined room. Expert/fallback tool when dedicated tools do not cover a case.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -119,6 +264,110 @@ export async function startMcpServer(): Promise<void> {
             if (name === 'list_capabilities') {
                 const response = listCapabilitiesTool({
                     token: getStringArg(args, 'token'),
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'list_nodes') {
+                const response = await listNodesTool();
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'list_current_nodes') {
+                const response = listCurrentNodesTool(runtime);
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'add_node') {
+                const position = args.position as { x: number; y: number };
+                const response = await addNodeTool(runtime, {
+                    nodeId: args.nodeId as string,
+                    nodeType: args.nodeType as string,
+                    position,
+                    properties: args.properties as Record<string, unknown> | undefined,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'remove_node') {
+                const response = await removeNodeTool(runtime, {
+                    nodeId: args.nodeId as string,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'move_node') {
+                const response = await moveNodeTool(runtime, {
+                    nodeId: args.nodeId as string,
+                    x: args.x as number,
+                    y: args.y as number,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'edit_node_properties') {
+                const response = await editNodePropertiesTool(runtime, {
+                    nodeId: args.nodeId as string,
+                    properties: args.properties as Record<string, unknown>,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'connect_nodes') {
+                const response = await connectNodesTool(runtime, {
+                    connectionId:
+                        typeof args.connectionId === 'string'
+                            ? args.connectionId
+                            : undefined,
+                    fromNodeId: args.fromNodeId as string,
+                    fromPort: args.fromPort as string,
+                    toNodeId: args.toNodeId as string,
+                    toPort: args.toPort as string,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'disconnect_nodes') {
+                const response = await disconnectNodesTool(runtime, {
+                    connectionId:
+                        typeof args.connectionId === 'string'
+                            ? args.connectionId
+                            : undefined,
+                    fromNodeId:
+                        typeof args.fromNodeId === 'string'
+                            ? args.fromNodeId
+                            : undefined,
+                    fromPort:
+                        typeof args.fromPort === 'string' ? args.fromPort : undefined,
+                    toNodeId:
+                        typeof args.toNodeId === 'string' ? args.toNodeId : undefined,
+                    toPort: typeof args.toPort === 'string' ? args.toPort : undefined,
+                });
+                return {
+                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                };
+            }
+
+            if (name === 'move_cursor') {
+                const response = await moveCursorTool(runtime, {
+                    x: args.x as number,
+                    y: args.y as number,
                 });
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
