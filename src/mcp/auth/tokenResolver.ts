@@ -42,20 +42,6 @@ export function resolveToken(
     return { claims, expiration };
 }
 
-export function assertTokenProjectMatch(
-    tokenProjectId: number | undefined,
-    inputProjectId: string,
-): void {
-    if (tokenProjectId === undefined) {
-        return;
-    }
-    if (String(tokenProjectId) !== String(inputProjectId)) {
-        throw new Error(
-            `Token project mismatch: token=${tokenProjectId}, input=${inputProjectId}.`,
-        );
-    }
-}
-
 function decodeTokenPayload(token: string): CollaborationTokenClaims {
     const parts = token.split('.');
     if (parts.length < 2) {

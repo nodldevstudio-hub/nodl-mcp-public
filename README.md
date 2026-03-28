@@ -48,7 +48,6 @@ Notes:
 
 1. Generate an MCP agent token in Nodl app (`Share -> Collaborate -> MCP token`).
 2. In your AI client, call `join_project`:
-   - `projectId`: project id
    - `token`: short-lived token
    - `endpoint` (optional): defaults to `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL` env var, else `ws://localhost:1235/collaboration`
 3. Call `list_capabilities` to confirm role/scopes/expiry.
@@ -73,7 +72,6 @@ Input:
 
 ```json
 {
-  "projectId": "42",
   "token": "<short-lived-token>",
   "endpoint": "ws://localhost:1235/collaboration",
   "displayName": "MCP - Claude"
@@ -84,7 +82,7 @@ Output:
 - `session` (`projectId`, `mode`, `role`)
 - decoded token metadata (`scopes`, `exp`)
 - cursor identity metadata (`actorId`, `displayName`) used by `move_cursor`
-- fails fast if token is expired or token project does not match requested project
+- fails fast if token is expired or token has no `projectId` claim
 
 ### `list_capabilities`
 
@@ -192,7 +190,6 @@ This is CI/package publishing configuration, not MCP runtime usage.
 
 Check:
 - token not expired
-- token project matches `projectId`
 - endpoint is correct (`endpoint` argument has priority, then `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL`, then `ws://localhost:1235/collaboration`)
 - role/scopes allow requested actions
 

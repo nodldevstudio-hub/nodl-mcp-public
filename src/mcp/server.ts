@@ -29,10 +29,6 @@ const TOOLS: Tool[] = [
         inputSchema: {
             type: 'object',
             properties: {
-                projectId: {
-                    type: 'string',
-                    description: 'Nodl project identifier',
-                },
                 token: {
                     type: 'string',
                     description: 'Short-lived collaboration token issued by Nodl backend',
@@ -48,7 +44,7 @@ const TOOLS: Tool[] = [
                         'Optional display name used for MCP cursor presence (fallback: token displayName).',
                 },
             },
-            required: ['projectId', 'token'],
+            required: ['token'],
             additionalProperties: false,
         },
     },
@@ -261,7 +257,6 @@ export async function startMcpServer(): Promise<void> {
         try {
             if (name === 'join_project') {
                 const response = await joinProjectTool(runtime, {
-                    projectId: getStringArg(args, 'projectId'),
                     token: getStringArg(args, 'token'),
                     endpoint:
                         typeof args.endpoint === 'string' ? args.endpoint : undefined,

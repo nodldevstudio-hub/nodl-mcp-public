@@ -1,11 +1,9 @@
 import { CollaborationRuntime } from '../../runtime/collaborationRuntime.js';
 import {
-    assertTokenProjectMatch,
     resolveToken,
 } from '../auth/tokenResolver.js';
 
 export interface JoinProjectArgs {
-    projectId: string;
     token: string;
     endpoint?: string;
     displayName?: string;
@@ -17,11 +15,14 @@ export async function joinProjectTool(
 ): Promise<Record<string, unknown>> {
     const endpoint = resolveEndpoint(args.endpoint);
     const resolvedToken = resolveToken(args.token, { requireNotExpired: true });
-    assertTokenProjectMatch(resolvedToken.claims.projectId, args.projectId);
+    const tokenProjectId = resolvedToken.claims.projectId;
+    if (typeof tokenProjectId !== 'number') {
+        throw new Error('Token is missing projectId claim.');
+    }
 
     const joinResult = await runtime.joinSession({
         endpoint,
-        projectId: args.projectId,
+        projectId: String(tokenProjectId),
         token: args.token,
     });
 
