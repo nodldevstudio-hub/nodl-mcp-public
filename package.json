@@ -1,6 +1,6 @@
 {
   "name": "nodl-collab-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Public MCP server for Nodl collaboration via public endpoints and user-provided tokens.",
   "type": "module",
   "main": "dist/index.js",
