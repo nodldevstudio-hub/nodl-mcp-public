@@ -49,20 +49,21 @@ Notes:
 1. Generate an MCP agent token in Nodl app (`Share -> Collaborate -> MCP token`).
 2. In your AI client, call `join_project`:
    - `token`: short-lived token
-   - `endpoint` (optional): defaults to `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL` env var, else `ws://localhost:1235/collaboration`
+   - `endpoint` (optional): set to your production backend collaboration namespace (example: `wss://api.nodl.dev/collaboration`)
 3. Call `list_capabilities` to confirm role/scopes/expiry.
 4. Use dedicated tools for common graph operations (`add_node`, `move_node`, `connect_nodes`, ...).
 5. Use `apply_graph_mutation` for expert/fallback raw operations.
 
-## Endpoint override with `.env` (dev)
+## Endpoint override with `.env` (production)
 
 Create a local `.env` file (not committed) at package root:
 
 ```env
-NODL_COLLAB_ENDPOINT=ws://localhost:1235/collaboration
+NODL_COLLAB_ENDPOINT=wss://api.nodl.dev/collaboration
 ```
 
 This override is automatically loaded on startup (`dotenv/config`).
+Set this endpoint to the unified backend Socket.IO namespace URL.
 
 ## Tool contracts
 
@@ -73,12 +74,13 @@ Input:
 ```json
 {
   "token": "<short-lived-token>",
-  "endpoint": "ws://localhost:1235/collaboration",
+  "endpoint": "wss://api.nodl.dev/collaboration",
   "displayName": "MCP - Claude"
 }
 ```
 
 Output:
+- `endpointUsed` (effective Socket.IO endpoint used by MCP)
 - `session` (`projectId`, `mode`, `role`)
 - decoded token metadata (`scopes`, `exp`)
 - cursor identity metadata (`actorId`, `displayName`) used by `move_cursor`
@@ -190,7 +192,7 @@ This is CI/package publishing configuration, not MCP runtime usage.
 
 Check:
 - token not expired
-- endpoint is correct (`endpoint` argument has priority, then `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL`, then `ws://localhost:1235/collaboration`)
+- endpoint is correct (`endpoint` argument has priority, then `NODL_COLLAB_ENDPOINT`/`COLLAB_SECURE_WS_URL`)
 - role/scopes allow requested actions
 
 ### `apply_graph_mutation` returns rejected

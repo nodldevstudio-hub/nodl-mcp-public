@@ -22,7 +22,6 @@ export async function joinProjectTool(
 
     const joinResult = await runtime.joinSession({
         endpoint,
-        projectId: String(tokenProjectId),
         token: args.token,
     });
 
@@ -58,19 +57,23 @@ export async function joinProjectTool(
 }
 
 function resolveEndpoint(explicitEndpoint?: string): string {
+    const normalizedExplicit =
+        typeof explicitEndpoint === 'string' && explicitEndpoint.trim().length > 0
+            ? explicitEndpoint.trim()
+            : undefined;
     const envEndpointCandidates = [
         process.env.NODL_COLLAB_ENDPOINT,
         process.env.COLLAB_SECURE_WS_URL,
-        process.env.NODL_REALTIME_ENDPOINT,
     ];
 
-    const firstEnvEndpoint = envEndpointCandidates.find(
-        (candidate) => typeof candidate === 'string' && candidate.trim().length > 0,
-    );
+    const firstEnvEndpoint = envEndpointCandidates
+        .filter((candidate): candidate is string => typeof candidate === 'string')
+        .map((candidate) => candidate.trim())
+        .find((candidate) => candidate.length > 0);
 
     return (
-        explicitEndpoint ??
+        normalizedExplicit ??
         firstEnvEndpoint ??
-        'ws://localhost:1235/collaboration'
+        'ws://localhost:3000/collaboration'
     );
 }

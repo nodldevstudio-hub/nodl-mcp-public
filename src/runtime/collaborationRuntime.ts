@@ -7,7 +7,6 @@ import {
 
 export interface JoinSessionInput {
     endpoint: string;
-    projectId: string;
     token: string;
 }
 
@@ -61,7 +60,7 @@ export class CollaborationRuntime {
                 ?.timeout(5000)
                 .emit(
                     'collaboration:join',
-                    { projectId: Number(input.projectId) },
+                    {},
                     (err: unknown, response: any) => {
                         if (err) {
                             reject(new Error('join timeout or rejection'));
@@ -129,7 +128,6 @@ export class CollaborationRuntime {
                 .emit(
                     'collaboration:mutation',
                     {
-                        projectId: Number(this.currentProjectId),
                         type,
                         payload,
                     },
@@ -178,7 +176,6 @@ export class CollaborationRuntime {
                 .emit(
                     'collaboration:cursor',
                     {
-                        projectId: Number(this.currentProjectId),
                         id: this.cursorIdentity.actorId,
                         actorId: this.cursorIdentity.actorId,
                         actorType: this.cursorIdentity.actorType,
