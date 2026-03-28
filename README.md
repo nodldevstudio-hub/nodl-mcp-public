@@ -40,7 +40,20 @@ After publishing:
 npx @nodldevstudio-hub/nodl-collab-mcp
 ```
 
-## Publish
+## CI publish (GitHub Actions + environment secret)
+
+Workflow: `.github/workflows/publish.yml`
+
+Requirements:
+- Create environment `release` in GitHub repo settings.
+- Add environment secret `NPM_TOKEN` (npm Automation token).
+- Enable required reviewers on environment `release`.
+
+Trigger options:
+- Push a tag like `v0.1.1`
+- Or run `workflow_dispatch` from `main`
+
+## Publish manually (fallback)
 
 ```bash
 npm publish --access public
