@@ -55,6 +55,8 @@ export class CollaborationRuntime {
             this.socket?.once('connect_error', onConnectError);
         });
 
+        await this.waitForServerAuthentication();
+
         const joinAck = await new Promise<JoinSessionResult>((resolve, reject) => {
             this.socket
                 ?.timeout(5000)
@@ -234,6 +236,55 @@ export class CollaborationRuntime {
             return trimmed;
         }
         return `${trimmed}/collaboration`;
+    }
+
+    private async waitForServerAuthentication(): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            const socket = this.socket;
+            if (!socket) {
+                reject(new Error('Socket is not initialized.'));
+                return;
+            }
+
+            const timeout = setTimeout(() => {
+                cleanup();
+                reject(
+                    new Error(
+                        'Server did not confirm collaboration authentication in time.',
+                    ),
+                );
+            }, 5000);
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                socket.off('collaboration:connected', onConnected);
+                socket.off('collaboration:connection_error', onConnectionError);
+                socket.off('disconnect', onDisconnect);
+            };
+
+            const onConnected = () => {
+                cleanup();
+                resolve();
+            };
+
+            const onConnectionError = (payload: { reason?: string } | undefined) => {
+                cleanup();
+                reject(
+                    new Error(
+                        payload?.reason ?? 'Server rejected collaboration connection.',
+                    ),
+                );
+            };
+
+            const onDisconnect = () => {
+                cleanup();
+                reject(new Error('Socket disconnected before authentication.'));
+            };
+
+            socket.once('collaboration:connected', onConnected);
+            socket.once('collaboration:connection_error', onConnectionError);
+            socket.once('disconnect', onDisconnect);
+        });
     }
 
     private parseAck(
