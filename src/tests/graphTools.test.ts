@@ -156,8 +156,8 @@ test('describe_node_properties returns allowed schema and current values', async
     assert.equal(response.nodeId, 'noise1');
     assert.equal(response.nodeType, 'noise');
     const properties = response.properties as Array<Record<string, unknown>>;
-    const typeProp = properties.find((p) => p.name === 'type');
-    const seedProp = properties.find((p) => p.name === 'seed');
+    const typeProp = properties.find((p) => p.key === 'type');
+    const seedProp = properties.find((p) => p.key === 'seed');
 
     assert.ok(typeProp);
     assert.equal(typeProp?.currentValue, 'Perlin 3D');
@@ -166,11 +166,50 @@ test('describe_node_properties returns allowed schema and current values', async
     assert.equal(seedProp?.currentValue, 666);
 });
 
+test('describe_node_properties returns runtime keys for display-named properties', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.dither1 = {
+        nodeId: 'dither1',
+        nodeType: 'dither',
+        properties: {
+            colorA: {
+                name: 'Color A',
+                type: 'vector4',
+                value: { x: 0, y: 0, z: 0, w: 1 },
+            },
+            colorMode: {
+                name: 'colorMode',
+                type: 'select',
+                options: ['Inherit', 'Custom'],
+                value: 'Custom',
+            },
+        },
+    };
+
+    const response = await describeNodePropertiesTool(runtime as never, {
+        nodeId: 'dither1',
+    });
+
+    const properties = response.properties as Array<Record<string, unknown>>;
+    assert.ok(properties.some((p) => p.key === 'colorA'));
+    assert.ok(properties.some((p) => p.key === 'colorMode'));
+    assert.equal(properties.some((p) => p.key === 'Color A'), false);
+});
+
 test('edit_node_properties accepts normalized property names and vector aliases', async () => {
     const runtime = new FakeRuntime();
     runtime.state.nodes.noise2 = {
         nodeId: 'noise2',
         nodeType: 'noise',
+        properties: {
+            colorA: {
+                name: 'Color A',
+                type: 'vector4',
+                min: 0,
+                max: 1,
+                value: { x: 0, y: 0, z: 0, w: 1 },
+            },
+        },
     };
 
     const response = await editNodePropertiesTool(runtime as never, {
@@ -184,8 +223,8 @@ test('edit_node_properties accepts normalized property names and vector aliases'
     assert.equal(runtime.lastMutation?.type, 'updateNodeProperties');
     const payload = runtime.lastMutation?.payload as Record<string, unknown>;
     const props = payload.properties as Record<string, unknown>;
-    assert.ok(props['Color A']);
-    assert.deepEqual(props['Color A'], { x: 1, y: 0, z: 0, w: 1 });
+    assert.ok(props.colorA);
+    assert.deepEqual(props.colorA, { x: 1, y: 0, z: 0, w: 1 });
 });
 
 test('edit_node_properties rejects out-of-range vector component values', async () => {
@@ -193,6 +232,15 @@ test('edit_node_properties rejects out-of-range vector component values', async 
     runtime.state.nodes.noise2 = {
         nodeId: 'noise2',
         nodeType: 'noise',
+        properties: {
+            colorA: {
+                name: 'Color A',
+                type: 'vector4',
+                min: 0,
+                max: 1,
+                value: { x: 0, y: 0, z: 0, w: 1 },
+            },
+        },
     };
 
     await assert.rejects(

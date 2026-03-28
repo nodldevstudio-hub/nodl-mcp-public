@@ -142,6 +142,7 @@ Semantics:
 - `move_node`: validated wrapper over `moveNode`
 - `edit_node_properties`: validated wrapper over `updateNodeProperties`
 - `describe_node_properties`: returns allowed property schema and current values for a node
+  - Important: this tool returns runtime property `key` values (stable, non-translated) that should be used with `edit_node_properties`.
 - `connect_nodes`: validated wrapper over `addConnection`
 - `disconnect_nodes`: validated wrapper over `deleteConnection`
 - `move_cursor`: emits collaboration cursor updates

@@ -249,34 +249,79 @@ export async function describeNodePropertiesTool(
             ? (targetNode.properties as Record<string, unknown>)
             : {};
 
-    const properties = (nodeMeta.properties ?? []).map((prop) => {
-        const currentRaw = currentProperties[prop.name];
-        const currentObj =
-            currentRaw && typeof currentRaw === 'object'
-                ? (currentRaw as Record<string, unknown>)
-                : null;
-        const currentValue =
-            currentObj && Object.prototype.hasOwnProperty.call(currentObj, 'value')
-                ? currentObj.value
-                : currentRaw;
-        const currentMode =
-            currentObj && typeof currentObj.mode === 'string'
-                ? currentObj.mode
-                : undefined;
+    const metadataByNormalizedName = new Map<string, NodePropertyMetadata>();
+    for (const meta of nodeMeta.properties ?? []) {
+        metadataByNormalizedName.set(normalizePropertyKey(meta.name), meta);
+    }
 
-        return {
-            name: prop.name,
-            type: prop.type ?? null,
-            category: prop.category ?? null,
-            options: Array.isArray(prop.options) ? prop.options : [],
-            min: typeof prop.min === 'number' ? prop.min : null,
-            max: typeof prop.max === 'number' ? prop.max : null,
-            defaultValue:
-                typeof prop.defaultValue === 'undefined' ? null : prop.defaultValue,
-            currentValue: typeof currentValue === 'undefined' ? null : currentValue,
-            ...(currentMode ? { currentMode } : {}),
-        };
-    });
+    const properties = Object.entries(currentProperties).map(
+        ([runtimeKey, currentRaw]) => {
+            const currentObj =
+                currentRaw && typeof currentRaw === 'object'
+                    ? (currentRaw as Record<string, unknown>)
+                    : null;
+            const displayName =
+                currentObj && typeof currentObj.name === 'string'
+                    ? currentObj.name
+                    : runtimeKey;
+
+            const matchedMeta =
+                metadataByNormalizedName.get(
+                    normalizePropertyKey(String(displayName))
+                ) ??
+                metadataByNormalizedName.get(normalizePropertyKey(runtimeKey));
+
+            const currentValue =
+                currentObj &&
+                Object.prototype.hasOwnProperty.call(currentObj, 'value')
+                    ? currentObj.value
+                    : currentRaw;
+            const currentMode =
+                currentObj && typeof currentObj.mode === 'string'
+                    ? currentObj.mode
+                    : undefined;
+
+            return {
+                key: runtimeKey,
+                type:
+                    (currentObj && typeof currentObj.type === 'string'
+                        ? currentObj.type
+                        : null) ??
+                    matchedMeta?.type ??
+                    null,
+                category:
+                    (currentObj && typeof currentObj.category === 'string'
+                        ? currentObj.category
+                        : null) ??
+                    matchedMeta?.category ??
+                    null,
+                options:
+                    (currentObj && Array.isArray(currentObj.options)
+                        ? currentObj.options
+                        : null) ??
+                    (Array.isArray(matchedMeta?.options)
+                        ? matchedMeta?.options
+                        : []),
+                min:
+                    (currentObj && typeof currentObj.min === 'number'
+                        ? currentObj.min
+                        : null) ??
+                    (typeof matchedMeta?.min === 'number' ? matchedMeta.min : null),
+                max:
+                    (currentObj && typeof currentObj.max === 'number'
+                        ? currentObj.max
+                        : null) ??
+                    (typeof matchedMeta?.max === 'number' ? matchedMeta.max : null),
+                defaultValue:
+                    typeof matchedMeta?.defaultValue === 'undefined'
+                        ? null
+                        : matchedMeta.defaultValue,
+                currentValue:
+                    typeof currentValue === 'undefined' ? null : currentValue,
+                ...(currentMode ? { currentMode } : {}),
+            };
+        }
+    );
 
     return {
         nodeId: args.nodeId,
@@ -477,34 +522,135 @@ async function normalizeAndValidateNodeProperties(
         throw new Error(`Unknown node type in catalog: ${nodeType}`);
     }
 
+    const currentProperties =
+        targetNode.properties && typeof targetNode.properties === 'object'
+            ? (targetNode.properties as Record<string, unknown>)
+            : {};
+
     const normalized: Record<string, unknown> = {};
     const availableProps = nodeMeta.properties ?? [];
     for (const [requestedKey, rawValue] of Object.entries(properties)) {
+        const runtimePropertyKey = resolveRuntimePropertyKey(
+            requestedKey,
+            currentProperties,
+            availableProps
+        );
+
+        if (!runtimePropertyKey) {
+            const allowedKeys = Object.keys(currentProperties);
+            throw new Error(
+                `Unknown property '${requestedKey}' for node type '${nodeType}'. Allowed runtime keys: ${allowedKeys.join(', ')}.`,
+            );
+        }
+
+        const localProperty =
+            currentProperties[runtimePropertyKey] &&
+            typeof currentProperties[runtimePropertyKey] === 'object'
+                ? (currentProperties[runtimePropertyKey] as Record<string, unknown>)
+                : null;
+
         const propertyMeta =
-            availableProps.find((prop) => prop.name === requestedKey) ??
             availableProps.find(
-                (prop) => prop.name.toLowerCase() === requestedKey.toLowerCase()
+                (prop) =>
+                    normalizePropertyKey(prop.name) ===
+                    normalizePropertyKey(
+                        String(localProperty?.name ?? runtimePropertyKey)
+                    )
             ) ??
             availableProps.find(
                 (prop) =>
                     normalizePropertyKey(prop.name) ===
-                    normalizePropertyKey(requestedKey)
-            );
+                    normalizePropertyKey(runtimePropertyKey)
+            ) ??
+            null;
 
-        if (!propertyMeta) {
-            throw new Error(
-                `Unknown property '${requestedKey}' for node type '${nodeType}'.`,
-            );
-        }
+        const descriptor: NodePropertyMetadata = {
+            name: runtimePropertyKey,
+            type:
+                (localProperty && typeof localProperty.type === 'string'
+                    ? localProperty.type
+                    : undefined) ?? propertyMeta?.type,
+            defaultValue: propertyMeta?.defaultValue,
+            category:
+                (localProperty && typeof localProperty.category === 'string'
+                    ? localProperty.category
+                    : undefined) ?? propertyMeta?.category,
+            options:
+                (localProperty && Array.isArray(localProperty.options)
+                    ? localProperty.options
+                    : undefined) ?? propertyMeta?.options,
+            min:
+                (localProperty && typeof localProperty.min === 'number'
+                    ? localProperty.min
+                    : undefined) ?? propertyMeta?.min,
+            max:
+                (localProperty && typeof localProperty.max === 'number'
+                    ? localProperty.max
+                    : undefined) ?? propertyMeta?.max,
+        };
 
-        normalized[propertyMeta.name] = coerceAndValidatePropertyValue(
-            propertyMeta,
+        normalized[runtimePropertyKey] = coerceAndValidatePropertyValue(
+            descriptor,
             rawValue,
             nodeType,
         );
     }
 
     return normalized;
+}
+
+function resolveRuntimePropertyKey(
+    requestedKey: string,
+    currentProperties: Record<string, unknown>,
+    availableProps: NodePropertyMetadata[]
+): string | null {
+    if (Object.prototype.hasOwnProperty.call(currentProperties, requestedKey)) {
+        return requestedKey;
+    }
+
+    const normalizedRequested = normalizePropertyKey(requestedKey);
+    const byNormalizedKey = Object.keys(currentProperties).find(
+        (key) => normalizePropertyKey(key) === normalizedRequested
+    );
+    if (byNormalizedKey) {
+        return byNormalizedKey;
+    }
+
+    const byDisplayName = Object.entries(currentProperties).find(([, value]) => {
+        if (!value || typeof value !== 'object') {
+            return false;
+        }
+        const displayName = (value as Record<string, unknown>).name;
+        return (
+            typeof displayName === 'string' &&
+            normalizePropertyKey(displayName) === normalizedRequested
+        );
+    });
+    if (byDisplayName) {
+        return byDisplayName[0];
+    }
+
+    const matchedCatalogProperty =
+        availableProps.find(
+            (prop) => normalizePropertyKey(prop.name) === normalizedRequested
+        ) ?? null;
+    if (!matchedCatalogProperty) {
+        return null;
+    }
+
+    const byCatalogName = Object.entries(currentProperties).find(([, value]) => {
+        if (!value || typeof value !== 'object') {
+            return false;
+        }
+        const displayName = (value as Record<string, unknown>).name;
+        return (
+            typeof displayName === 'string' &&
+            normalizePropertyKey(displayName) ===
+                normalizePropertyKey(matchedCatalogProperty.name)
+        );
+    });
+
+    return byCatalogName ? byCatalogName[0] : null;
 }
 
 function coerceAndValidatePropertyValue(
