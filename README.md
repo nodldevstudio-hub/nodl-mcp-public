@@ -147,3 +147,7 @@ npm install
 npm run build
 npm start
 ```
+
+When run directly (`npx -y nodl-collab-mcp`), the server stays waiting on stdio.
+This is expected. Startup logs are printed to `stderr`.
+Set `NODL_MCP_SILENT=true` to disable startup logs.
