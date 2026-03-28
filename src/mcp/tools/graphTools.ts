@@ -41,6 +41,11 @@ export interface ListCurrentNodesArgs {
     previewLimit?: number;
 }
 
+export interface DescribeCurrentNodesArgs {
+    nodeIds: string[];
+    includeRaw?: boolean;
+}
+
 export interface AddNodeArgs {
     nodeId: string;
     nodeType: string;
@@ -170,6 +175,72 @@ export async function listCurrentNodesTool(
                   connections: state.connections,
               }
             : {}),
+    };
+}
+
+export async function describeCurrentNodesTool(
+    runtime: CollaborationRuntime,
+    args: DescribeCurrentNodesArgs,
+): Promise<Record<string, unknown>> {
+    await syncRuntimeSnapshot(runtime);
+    if (!Array.isArray(args.nodeIds) || args.nodeIds.length === 0) {
+        throw new Error('Invalid or missing array argument: nodeIds');
+    }
+
+    const ids = args.nodeIds
+        .filter((nodeId): nodeId is string => typeof nodeId === 'string')
+        .map((nodeId) => nodeId.trim())
+        .filter((nodeId) => nodeId.length > 0);
+    if (ids.length === 0) {
+        throw new Error('nodeIds must contain at least one non-empty string.');
+    }
+
+    const maxIds = 50;
+    const limitedIds = ids.slice(0, maxIds);
+    const includeRaw = args.includeRaw === true;
+    const state = runtime.getGraphSessionState();
+
+    const nodes = limitedIds.map((nodeId) => {
+        const raw = state.nodes[nodeId] as Record<string, unknown> | undefined;
+        if (!raw) {
+            return {
+                nodeId,
+                exists: false,
+            };
+        }
+
+        const nodeTypeValue =
+            (typeof raw.nodeType === 'string' && raw.nodeType) ||
+            (typeof raw.type === 'string' && raw.type) ||
+            null;
+        const properties =
+            raw.properties && typeof raw.properties === 'object'
+                ? (raw.properties as Record<string, unknown>)
+                : {};
+
+        return {
+            nodeId,
+            exists: true,
+            nodeType: nodeTypeValue,
+            nodeTypeField:
+                typeof raw.nodeType === 'string' ? raw.nodeType : null,
+            typeField: typeof raw.type === 'string' ? raw.type : null,
+            x: typeof raw.x === 'number' ? raw.x : null,
+            y: typeof raw.y === 'number' ? raw.y : null,
+            propertyKeys: Object.keys(properties),
+            keys: Object.keys(raw),
+            ...(includeRaw ? { raw } : {}),
+        };
+    });
+
+    return {
+        initialized: state.initialized,
+        sessionScoped: true,
+        lastUpdatedAt: state.lastUpdatedAt,
+        requestedCount: ids.length,
+        returnedCount: nodes.length,
+        truncated: ids.length > maxIds,
+        nodes,
     };
 }
 
@@ -387,13 +458,26 @@ export async function connectNodesTool(
     }
 
     const sourceType =
-        typeof sourceNode.nodeType === 'string' ? sourceNode.nodeType : null;
+        (typeof sourceNode.nodeType === 'string' && sourceNode.nodeType) ||
+        (typeof sourceNode.type === 'string' && sourceNode.type) ||
+        null;
     const targetType =
-        typeof targetNode.nodeType === 'string' ? targetNode.nodeType : null;
+        (typeof targetNode.nodeType === 'string' && targetNode.nodeType) ||
+        (typeof targetNode.type === 'string' && targetNode.type) ||
+        null;
 
     if (!sourceType || !targetType) {
+        const sourceKeys = Object.keys(sourceNode);
+        const targetKeys = Object.keys(targetNode);
+        const sourceHint =
+            sourceKeys.length > 0 ? sourceKeys.join(', ') : '(empty node object)';
+        const targetHint =
+            targetKeys.length > 0 ? targetKeys.join(', ') : '(empty node object)';
         throw new Error(
-            'connect_nodes requires source and target nodeType values in session state.',
+            `connect_nodes requires source and target nodeType/type values in session state. ` +
+                `Mitigation: call describe_current_nodes with {"nodeIds":["${args.fromNodeId}","${args.toNodeId}"]} to inspect required fields, ` +
+                `then refresh session state (or re-join project) before retrying. ` +
+                `source keys=[${sourceHint}], target keys=[${targetHint}]`,
         );
     }
 

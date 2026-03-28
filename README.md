@@ -15,6 +15,7 @@ Available tools:
 - `list_capabilities`
 - `list_nodes`
 - `list_current_nodes`
+- `describe_current_nodes`
 - `add_node`
 - `remove_node`
 - `move_node`
@@ -134,6 +135,25 @@ Optional input:
 - `includeFullState: true` to include full `nodes` and `connections`
 - `previewLimit` to tune preview size in summary mode (default 20, max 200)
 
+### `describe_current_nodes`
+
+Input:
+
+```json
+{
+  "nodeIds": ["noise-1", "edge-1"],
+  "includeRaw": false
+}
+```
+
+Output:
+- targeted node diagnostics for only requested IDs:
+  - `nodeType` and fallback `type`
+  - available object `keys`
+  - `x` / `y`
+  - `propertyKeys`
+- use this when `connect_nodes` complains about missing `nodeType/type` fields.
+
 Semantics:
 - this state is scoped to the active MCP process/session only,
 - it starts empty on `join_project` (no historical snapshot fetch),
@@ -177,6 +197,8 @@ Before calling `edit_node_properties`, call `describe_node_properties`:
 - Expired/invalid token is rejected by backend.
 
 ## Troubleshooting
+
+All tool errors include an inline `Mitigation:` hint to guide next steps (token refresh, websocket mode mismatch, missing scopes, schema fixes, targeted node inspection, etc.).
 
 ### Auth errors (`ENEEDAUTH`, `E404 scope not found`) during npm publish
 

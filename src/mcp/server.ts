@@ -6,11 +6,13 @@ import {
     Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import { CollaborationRuntime } from '../runtime/collaborationRuntime.js';
+import { withMitigation } from './errorMitigations.js';
 import { joinProjectTool } from './tools/joinProject.js';
 import { listCapabilitiesTool } from './tools/listCapabilities.js';
 import {
     addNodeTool,
     connectNodesTool,
+    describeCurrentNodesTool,
     describeNodePropertiesTool,
     disconnectNodesTool,
     editNodePropertiesTool,
@@ -114,6 +116,29 @@ const TOOLS: Tool[] = [
                         'Max IDs returned in preview lists when includeFullState is false (default: 20, max: 200).',
                 },
             },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'describe_current_nodes',
+        description:
+            'Inspect specific current-session nodes with focused fields (nodeType/type, keys, position, property keys) without dumping full state.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                nodeIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description:
+                        'Node IDs to inspect (targeted debug helper; max 50 IDs).',
+                },
+                includeRaw: {
+                    type: 'boolean',
+                    description:
+                        'Include raw node object for each requested ID (default: false).',
+                },
+            },
+            required: ['nodeIds'],
             additionalProperties: false,
         },
     },
@@ -341,6 +366,18 @@ export async function startMcpServer(): Promise<void> {
                 return { content: asToolResponseContent(response) };
             }
 
+            if (name === 'describe_current_nodes') {
+                const response = await describeCurrentNodesTool(runtime, {
+                    nodeIds: Array.isArray(args.nodeIds)
+                        ? (args.nodeIds as unknown[])
+                              .filter((value): value is string => typeof value === 'string')
+                              .map((value) => value)
+                        : [],
+                    includeRaw: args.includeRaw === true,
+                });
+                return { content: asToolResponseContent(response) };
+            }
+
             if (name === 'add_node') {
                 const position = args.position as { x: number; y: number };
                 const response = await addNodeTool(runtime, {
@@ -435,7 +472,10 @@ export async function startMcpServer(): Promise<void> {
                 content: [
                     {
                         type: 'text',
-                        text: `Tool ${name} failed: ${(error as Error).message}`,
+                        text: `Tool ${name} failed: ${withMitigation(
+                            name,
+                            (error as Error).message,
+                        )}`,
                     },
                 ],
             };

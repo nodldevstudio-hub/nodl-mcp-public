@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
     addNodeTool,
     connectNodesTool,
+    describeCurrentNodesTool,
     describeNodePropertiesTool,
     editNodePropertiesTool,
     listCurrentNodesTool,
@@ -99,6 +100,28 @@ test('connect_nodes accepts compatible ports and maps to addConnection', async (
     assert.equal(runtime.lastMutation?.type, 'addConnection');
 });
 
+test('connect_nodes accepts node type fallback from "type" field', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.source = {
+        nodeId: 'source',
+        type: 'noise',
+    };
+    runtime.state.nodes.target = {
+        nodeId: 'target',
+        type: 'layout',
+    };
+
+    const result = await connectNodesTool(runtime as never, {
+        fromNodeId: 'source',
+        fromPort: 'Texture',
+        toNodeId: 'target',
+        toPort: 'Texture 1',
+    });
+
+    assert.deepEqual(result, { ok: true, reason: null });
+    assert.equal(runtime.lastMutation?.type, 'addConnection');
+});
+
 test('list_current_nodes is session-scoped', async () => {
     const runtime = new FakeRuntime();
     runtime.state.nodes.n1 = { nodeId: 'n1', nodeType: 'noise' };
@@ -121,6 +144,34 @@ test('list_current_nodes returns full state when requested', async () => {
     });
 
     assert.ok(response.nodes?.n1);
+});
+
+test('describe_current_nodes returns focused diagnostics for requested ids', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.edge1 = {
+        nodeId: 'edge1',
+        type: 'edge',
+        x: 10,
+        y: 20,
+        properties: {
+            threshold: { value: 0.5 },
+        },
+    };
+
+    const response = await describeCurrentNodesTool(runtime as never, {
+        nodeIds: ['edge1', 'missing'],
+    });
+
+    const nodes = response.nodes as Array<Record<string, unknown>>;
+    const edge = nodes.find((node) => node.nodeId === 'edge1');
+    const missing = nodes.find((node) => node.nodeId === 'missing');
+    assert.ok(edge);
+    assert.equal(edge?.exists, true);
+    assert.equal(edge?.nodeType, 'edge');
+    assert.equal(edge?.typeField, 'edge');
+    assert.ok(Array.isArray(edge?.propertyKeys));
+    assert.ok(missing);
+    assert.equal(missing?.exists, false);
 });
 
 test('move_cursor maps to collaboration cursor event payload', async () => {
