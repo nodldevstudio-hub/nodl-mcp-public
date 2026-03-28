@@ -305,7 +305,7 @@ export async function startMcpServer(): Promise<void> {
             }
 
             if (name === 'list_current_nodes') {
-                const response = listCurrentNodesTool(runtime);
+                const response = await listCurrentNodesTool(runtime);
                 return {
                     content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
                 };

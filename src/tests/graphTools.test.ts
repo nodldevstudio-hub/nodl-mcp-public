@@ -36,6 +36,10 @@ class FakeRuntime {
     getGraphSessionState(): GraphSessionState {
         return structuredClone(this.state);
     }
+
+    async refreshSessionSnapshot(): Promise<void> {
+        // no-op for unit tests
+    }
 }
 
 test('add_node validates required fields', async () => {
@@ -95,11 +99,11 @@ test('connect_nodes accepts compatible ports and maps to addConnection', async (
     assert.equal(runtime.lastMutation?.type, 'addConnection');
 });
 
-test('list_current_nodes is session-scoped', () => {
+test('list_current_nodes is session-scoped', async () => {
     const runtime = new FakeRuntime();
     runtime.state.nodes.n1 = { nodeId: 'n1', nodeType: 'noise' };
 
-    const response = listCurrentNodesTool(runtime as never);
+    const response = await listCurrentNodesTool(runtime as never);
 
     assert.equal(response.sessionScoped, true);
     assert.equal(response.initialized, true);

@@ -128,9 +128,10 @@ export async function listNodesTool(args?: ListNodesArgs): Promise<ListNodesResu
     return { nodes };
 }
 
-export function listCurrentNodesTool(
+export async function listCurrentNodesTool(
     runtime: CollaborationRuntime,
-): ListCurrentNodesResult {
+): Promise<ListCurrentNodesResult> {
+    await syncRuntimeSnapshot(runtime);
     const state = runtime.getGraphSessionState();
     return {
         initialized: state.initialized,
@@ -193,6 +194,7 @@ export async function editNodePropertiesTool(
     runtime: CollaborationRuntime,
     args: EditNodePropertiesArgs,
 ): Promise<Record<string, unknown>> {
+    await syncRuntimeSnapshot(runtime);
     assertNonEmptyString(args.nodeId, 'nodeId');
     assertNonEmptyObject(args.properties, 'properties');
     const normalizedProperties = await normalizeAndValidateNodeProperties(
@@ -216,6 +218,7 @@ export async function describeNodePropertiesTool(
     runtime: CollaborationRuntime,
     args: DescribeNodePropertiesArgs,
 ): Promise<Record<string, unknown>> {
+    await syncRuntimeSnapshot(runtime);
     assertNonEmptyString(args.nodeId, 'nodeId');
 
     const state = runtime.getGraphSessionState();
@@ -287,6 +290,7 @@ export async function connectNodesTool(
     runtime: CollaborationRuntime,
     args: ConnectNodesArgs,
 ): Promise<Record<string, unknown>> {
+    await syncRuntimeSnapshot(runtime);
     assertNonEmptyString(args.fromNodeId, 'fromNodeId');
     assertNonEmptyString(args.fromPort, 'fromPort');
     assertNonEmptyString(args.toNodeId, 'toNodeId');
@@ -363,6 +367,7 @@ export async function disconnectNodesTool(
     runtime: CollaborationRuntime,
     args: DisconnectNodesArgs,
 ): Promise<Record<string, unknown>> {
+    await syncRuntimeSnapshot(runtime);
     const hasConnectionId = typeof args.connectionId === 'string';
     const hasEndpointTuple =
         typeof args.fromNodeId === 'string' &&
@@ -432,6 +437,14 @@ function formatAck(result: { ok: boolean; reason?: string }): Record<string, unk
         ok: result.ok,
         reason: result.reason ?? null,
     };
+}
+
+async function syncRuntimeSnapshot(runtime: CollaborationRuntime): Promise<void> {
+    try {
+        await runtime.refreshSessionSnapshot();
+    } catch {
+        // best-effort sync; local cache remains usable when snapshot refresh is unavailable
+    }
 }
 
 async function normalizeAndValidateNodeProperties(

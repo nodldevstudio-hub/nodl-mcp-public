@@ -62,35 +62,7 @@ export class CollaborationRuntime {
 
         await this.waitForServerAuthentication();
 
-        const joinAck = await new Promise<JoinSessionResult>((resolve, reject) => {
-            this.socket
-                ?.timeout(5000)
-                .emit(
-                    'collaboration:join',
-                    {},
-                    (arg1: unknown, arg2?: unknown) => {
-                        const { err, response } = this.parseAck(arg1, arg2);
-                        if (err) {
-                            reject(new Error('join timeout or rejection'));
-                            return;
-                        }
-                        if (!response?.ok) {
-                            reject(new Error(response?.reason ?? 'join rejected'));
-                            return;
-                        }
-                        resolve({
-                            projectId: String(response.projectId),
-                            mode: response.mode,
-                            role: response.role,
-                            snapshot:
-                                typeof response.snapshot === 'object' &&
-                                response.snapshot !== null
-                                    ? response.snapshot
-                                    : undefined,
-                        });
-                    },
-                );
-        });
+        const joinAck = await this.requestJoinAck();
 
         this.currentProjectId = joinAck.projectId;
         this.endpoint = input.endpoint;
@@ -109,6 +81,19 @@ export class CollaborationRuntime {
         });
 
         return joinAck;
+    }
+
+    async refreshSessionSnapshot(): Promise<void> {
+        if (!this.socket || !this.currentProjectId) {
+            throw new Error('No active collaboration session. Call join_project first.');
+        }
+
+        const joinAck = await this.requestJoinAck();
+        if (String(joinAck.projectId) !== String(this.currentProjectId)) {
+            throw new Error('Snapshot refresh project mismatch.');
+        }
+
+        applyGraphSnapshotToState(this.graphSessionState, joinAck.snapshot);
     }
 
     setCursorIdentity(identity: {
@@ -309,5 +294,37 @@ export class CollaborationRuntime {
             return { err: arg1, response: arg2 as any };
         }
         return { err: null, response: arg1 as any };
+    }
+
+    private async requestJoinAck(): Promise<JoinSessionResult> {
+        return await new Promise<JoinSessionResult>((resolve, reject) => {
+            this.socket
+                ?.timeout(5000)
+                .emit(
+                    'collaboration:join',
+                    {},
+                    (arg1: unknown, arg2?: unknown) => {
+                        const { err, response } = this.parseAck(arg1, arg2);
+                        if (err) {
+                            reject(new Error('join timeout or rejection'));
+                            return;
+                        }
+                        if (!response?.ok) {
+                            reject(new Error(response?.reason ?? 'join rejected'));
+                            return;
+                        }
+                        resolve({
+                            projectId: String(response.projectId),
+                            mode: response.mode,
+                            role: response.role,
+                            snapshot:
+                                typeof response.snapshot === 'object' &&
+                                response.snapshot !== null
+                                    ? response.snapshot
+                                    : undefined,
+                        });
+                    },
+                );
+        });
     }
 }
