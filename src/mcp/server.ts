@@ -43,6 +43,11 @@ const TOOLS: Tool[] = [
                     description:
                         'Optional display name used for MCP cursor presence (fallback: token displayName).',
                 },
+                includeSnapshot: {
+                    type: 'boolean',
+                    description:
+                        'Include full join snapshot in response (default: false).',
+                },
             },
             required: ['token'],
             additionalProperties: false,
@@ -94,10 +99,21 @@ const TOOLS: Tool[] = [
     {
         name: 'list_current_nodes',
         description:
-            'List current session-scoped patch state known by this MCP process (nodes + connections).',
+            'List current session-scoped patch state. Returns lightweight summary by default; full state is opt-in.',
         inputSchema: {
             type: 'object',
-            properties: {},
+            properties: {
+                includeFullState: {
+                    type: 'boolean',
+                    description:
+                        'Include full nodes/connections payload (default: false).',
+                },
+                previewLimit: {
+                    type: 'number',
+                    description:
+                        'Max IDs returned in preview lists when includeFullState is false (default: 20, max: 200).',
+                },
+            },
             additionalProperties: false,
         },
     },
@@ -236,12 +252,27 @@ const TOOLS: Tool[] = [
     },
 ];
 
+const SHOULD_PRETTY_PRINT_JSON = process.env.NODL_MCP_PRETTY_JSON === 'true';
+
 function getStringArg(args: Record<string, unknown>, key: string): string {
     const value = args[key];
     if (typeof value !== 'string' || value.length === 0) {
         throw new Error(`Invalid or missing string argument: ${key}`);
     }
     return value;
+}
+
+function asToolResponseContent(response: unknown): { type: 'text'; text: string }[] {
+    return [
+        {
+            type: 'text',
+            text: JSON.stringify(
+                response,
+                null,
+                SHOULD_PRETTY_PRINT_JSON ? 2 : 0,
+            ),
+        },
+    ];
 }
 
 export async function startMcpServer(): Promise<void> {
@@ -277,19 +308,16 @@ export async function startMcpServer(): Promise<void> {
                         typeof args.displayName === 'string'
                             ? args.displayName
                             : undefined,
+                    includeSnapshot: args.includeSnapshot === true,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'list_capabilities') {
                 const response = listCapabilitiesTool({
                     token: getStringArg(args, 'token'),
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'list_nodes') {
@@ -299,16 +327,18 @@ export async function startMcpServer(): Promise<void> {
                     includePorts: args.includePorts === true,
                     includeProperties: args.includeProperties === true,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'list_current_nodes') {
-                const response = await listCurrentNodesTool(runtime);
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                const response = await listCurrentNodesTool(runtime, {
+                    includeFullState: args.includeFullState === true,
+                    previewLimit:
+                        typeof args.previewLimit === 'number'
+                            ? args.previewLimit
+                            : undefined,
+                });
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'add_node') {
@@ -319,18 +349,14 @@ export async function startMcpServer(): Promise<void> {
                     position,
                     properties: args.properties as Record<string, unknown> | undefined,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'remove_node') {
                 const response = await removeNodeTool(runtime, {
                     nodeId: args.nodeId as string,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'move_node') {
@@ -339,9 +365,7 @@ export async function startMcpServer(): Promise<void> {
                     x: args.x as number,
                     y: args.y as number,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'edit_node_properties') {
@@ -349,18 +373,14 @@ export async function startMcpServer(): Promise<void> {
                     nodeId: args.nodeId as string,
                     properties: args.properties as Record<string, unknown>,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'describe_node_properties') {
                 const response = await describeNodePropertiesTool(runtime, {
                     nodeId: args.nodeId as string,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'connect_nodes') {
@@ -374,9 +394,7 @@ export async function startMcpServer(): Promise<void> {
                     toNodeId: args.toNodeId as string,
                     toPort: args.toPort as string,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'disconnect_nodes') {
@@ -395,9 +413,7 @@ export async function startMcpServer(): Promise<void> {
                         typeof args.toNodeId === 'string' ? args.toNodeId : undefined,
                     toPort: typeof args.toPort === 'string' ? args.toPort : undefined,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             if (name === 'move_cursor') {
@@ -409,9 +425,7 @@ export async function startMcpServer(): Promise<void> {
                             ? args.displayName
                             : undefined,
                 });
-                return {
-                    content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
-                };
+                return { content: asToolResponseContent(response) };
             }
 
             throw new Error(`Unknown tool: ${name}`);

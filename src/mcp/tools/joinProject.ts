@@ -8,6 +8,7 @@ export interface JoinProjectArgs {
     token: string;
     endpoint?: string;
     displayName?: string;
+    includeSnapshot?: boolean;
 }
 
 export async function joinProjectTool(
@@ -28,6 +29,10 @@ export async function joinProjectTool(
         endpoint,
         token: normalizedToken,
     });
+    const snapshotNodeCount = Object.keys(joinResult.snapshot?.nodes ?? {}).length;
+    const snapshotConnectionCount = Object.keys(
+        joinResult.snapshot?.connections ?? {},
+    ).length;
 
     const displayName =
         typeof args.displayName === 'string' && args.displayName.trim().length > 0
@@ -43,7 +48,18 @@ export async function joinProjectTool(
     return {
         ok: true,
         endpointUsed: endpoint,
-        session: joinResult,
+        session: {
+            projectId: joinResult.projectId,
+            mode: joinResult.mode,
+            role: joinResult.role,
+            snapshotSummary: {
+                nodeCount: snapshotNodeCount,
+                connectionCount: snapshotConnectionCount,
+            },
+            ...(args.includeSnapshot === true
+                ? { snapshot: joinResult.snapshot ?? null }
+                : {}),
+        },
         token: {
             actorType: resolvedToken.claims.actorType ?? null,
             actorId: resolvedToken.claims.actorId ?? null,

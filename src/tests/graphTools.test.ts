@@ -107,7 +107,20 @@ test('list_current_nodes is session-scoped', async () => {
 
     assert.equal(response.sessionScoped, true);
     assert.equal(response.initialized, true);
-    assert.ok(response.nodes.n1);
+    assert.equal(response.counts.nodes, 1);
+    assert.ok(response.nodeIdsPreview.includes('n1'));
+    assert.equal(typeof response.nodes, 'undefined');
+});
+
+test('list_current_nodes returns full state when requested', async () => {
+    const runtime = new FakeRuntime();
+    runtime.state.nodes.n1 = { nodeId: 'n1', nodeType: 'noise' };
+
+    const response = await listCurrentNodesTool(runtime as never, {
+        includeFullState: true,
+    });
+
+    assert.ok(response.nodes?.n1);
 });
 
 test('move_cursor maps to collaboration cursor event payload', async () => {

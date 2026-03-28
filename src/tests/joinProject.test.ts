@@ -62,6 +62,12 @@ test('join_project uses explicit endpoint and token-only join flow', async () =>
         (result as { endpointUsed: string }).endpointUsed,
         'wss://api.nodl.dev/collaboration',
     );
+    const session = (result as { session: Record<string, unknown> }).session;
+    assert.deepEqual(session.snapshotSummary, {
+        nodeCount: 0,
+        connectionCount: 0,
+    });
+    assert.equal(Object.prototype.hasOwnProperty.call(session, 'snapshot'), false);
     assert.equal(runtime.cursorIdentity?.displayName, 'Automation Agent');
 });
 

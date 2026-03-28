@@ -80,9 +80,10 @@ Input:
 
 Output:
 - `endpointUsed` (effective Socket.IO endpoint used by MCP)
-- `session` (`projectId`, `mode`, `role`)
+- `session` (`projectId`, `mode`, `role`, `snapshotSummary`)
 - decoded token metadata (`scopes`, `exp`)
 - cursor identity metadata (`actorId`, `displayName`) used by `move_cursor`
+- full snapshot omitted by default (set `includeSnapshot: true` to include it)
 - fails fast if token is expired or token has no `projectId` claim
 - ACK handling supports both Socket.IO callback shapes to avoid false `join timeout or rejection` errors.
 
@@ -121,12 +122,17 @@ Input:
 ```
 
 Output:
-- session-scoped cache with:
+- lightweight session-scoped summary with:
   - `initialized`
   - `sessionScoped: true`
   - `lastUpdatedAt`
-  - `nodes`
-  - `connections`
+  - `counts` (`nodes`, `connections`)
+  - `nodeIdsPreview`
+  - `connectionIdsPreview`
+
+Optional input:
+- `includeFullState: true` to include full `nodes` and `connections`
+- `previewLimit` to tune preview size in summary mode (default 20, max 200)
 
 Semantics:
 - this state is scoped to the active MCP process/session only,

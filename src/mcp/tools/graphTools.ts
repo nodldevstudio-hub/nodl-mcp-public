@@ -26,8 +26,19 @@ export interface ListCurrentNodesResult {
     initialized: boolean;
     sessionScoped: true;
     lastUpdatedAt: string | null;
-    nodes: Record<string, unknown>;
-    connections: Record<string, unknown>;
+    counts: {
+        nodes: number;
+        connections: number;
+    };
+    nodeIdsPreview: string[];
+    connectionIdsPreview: string[];
+    nodes?: Record<string, unknown>;
+    connections?: Record<string, unknown>;
+}
+
+export interface ListCurrentNodesArgs {
+    includeFullState?: boolean;
+    previewLimit?: number;
 }
 
 export interface AddNodeArgs {
@@ -130,15 +141,35 @@ export async function listNodesTool(args?: ListNodesArgs): Promise<ListNodesResu
 
 export async function listCurrentNodesTool(
     runtime: CollaborationRuntime,
+    args?: ListCurrentNodesArgs,
 ): Promise<ListCurrentNodesResult> {
     await syncRuntimeSnapshot(runtime);
     const state = runtime.getGraphSessionState();
+    const nodeIds = Object.keys(state.nodes);
+    const connectionIds = Object.keys(state.connections);
+    const requestedLimit =
+        typeof args?.previewLimit === 'number' && Number.isFinite(args.previewLimit)
+            ? Math.floor(args.previewLimit)
+            : 20;
+    const previewLimit = Math.min(Math.max(requestedLimit, 1), 200);
+    const includeFullState = args?.includeFullState === true;
+
     return {
         initialized: state.initialized,
         sessionScoped: true,
         lastUpdatedAt: state.lastUpdatedAt,
-        nodes: state.nodes,
-        connections: state.connections,
+        counts: {
+            nodes: nodeIds.length,
+            connections: connectionIds.length,
+        },
+        nodeIdsPreview: nodeIds.slice(0, previewLimit),
+        connectionIdsPreview: connectionIds.slice(0, previewLimit),
+        ...(includeFullState
+            ? {
+                  nodes: state.nodes,
+                  connections: state.connections,
+              }
+            : {}),
     };
 }
 
