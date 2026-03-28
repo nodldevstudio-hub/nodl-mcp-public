@@ -1,0 +1,41 @@
+{
+  "name": "@nodldevstudio-hub/nodl-collab-mcp",
+  "version": "0.1.0",
+  "description": "Public MCP server for Nodl collaboration via public endpoints and user-provided tokens.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "nodl-collab-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "check": "tsc --noEmit"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "nodl",
+    "collaboration",
+    "websocket"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3"
+  }
+}
