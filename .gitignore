@@ -4,3 +4,4 @@ dist/
 *.log
 .mcp.json
 .claude/
+scripts/release-interactive.sh

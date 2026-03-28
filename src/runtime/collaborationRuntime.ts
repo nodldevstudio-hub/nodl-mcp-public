@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import {
     applyGraphMutationToState,
+    applyGraphSnapshotToState,
     createEmptyGraphSessionState,
     GraphSessionState,
 } from './state/graphSessionState.js';
@@ -14,6 +15,10 @@ export interface JoinSessionResult {
     projectId: string;
     mode: 'webrtc' | 'websocket';
     role: 'owner' | 'editor' | 'viewer';
+    snapshot?: {
+        nodes?: Record<string, unknown>;
+        connections?: Record<string, unknown>;
+    };
 }
 
 export class CollaborationRuntime {
@@ -77,6 +82,11 @@ export class CollaborationRuntime {
                             projectId: String(response.projectId),
                             mode: response.mode,
                             role: response.role,
+                            snapshot:
+                                typeof response.snapshot === 'object' &&
+                                response.snapshot !== null
+                                    ? response.snapshot
+                                    : undefined,
                         });
                     },
                 );
@@ -86,6 +96,7 @@ export class CollaborationRuntime {
         this.endpoint = input.endpoint;
         this.graphSessionState = createEmptyGraphSessionState();
         this.graphSessionState.initialized = true;
+        applyGraphSnapshotToState(this.graphSessionState, joinAck.snapshot);
         this.socket.on('collaboration:mutation', (event: any) => {
             if (!event || typeof event.type !== 'string') {
                 return;

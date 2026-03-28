@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {
     applyGraphMutationToState,
+    applyGraphSnapshotToState,
     createEmptyGraphSessionState,
 } from '../runtime/state/graphSessionState.js';
 
@@ -83,4 +84,33 @@ test('graph session reducer merges incoming and outgoing payload formats', () =>
     });
 
     assert.equal(state.connections[key], undefined);
+});
+
+test('graph session snapshot bootstrap hydrates state on join', () => {
+    const state = createEmptyGraphSessionState();
+    state.initialized = true;
+
+    applyGraphSnapshotToState(state, {
+        nodes: {
+            'node-a': {
+                nodeId: 'node-a',
+                nodeType: 'noise',
+                x: 10,
+                y: 20,
+            },
+        },
+        connections: {
+            'c-1': {
+                id: 'c-1',
+                fromNodeId: 'node-a',
+                fromPort: 'out',
+                toNodeId: 'node-b',
+                toPort: 'in',
+            },
+        },
+    });
+
+    assert.equal(state.nodes['node-a']?.nodeType, 'noise');
+    assert.equal(state.connections['c-1']?.fromNodeId, 'node-a');
+    assert.notEqual(state.lastUpdatedAt, null);
 });

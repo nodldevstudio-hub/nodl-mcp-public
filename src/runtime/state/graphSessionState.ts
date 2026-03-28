@@ -26,6 +26,11 @@ export interface GraphSessionState {
     connections: Record<string, SessionConnectionState>;
 }
 
+export interface GraphSessionSnapshot {
+    nodes?: Record<string, unknown>;
+    connections?: Record<string, unknown>;
+}
+
 export function createEmptyGraphSessionState(): GraphSessionState {
     return {
         initialized: false,
@@ -34,6 +39,51 @@ export function createEmptyGraphSessionState(): GraphSessionState {
         nodes: {},
         connections: {},
     };
+}
+
+export function applyGraphSnapshotToState(
+    state: GraphSessionState,
+    snapshot: GraphSessionSnapshot | null | undefined,
+): void {
+    const nodes =
+        snapshot && typeof snapshot.nodes === 'object' && snapshot.nodes !== null
+            ? (snapshot.nodes as Record<string, unknown>)
+            : {};
+    const connections =
+        snapshot &&
+        typeof snapshot.connections === 'object' &&
+        snapshot.connections !== null
+            ? (snapshot.connections as Record<string, unknown>)
+            : {};
+
+    state.nodes = {};
+    state.connections = {};
+
+    for (const [nodeId, node] of Object.entries(nodes)) {
+        if (typeof node !== 'object' || node === null) {
+            continue;
+        }
+        state.nodes[nodeId] = {
+            nodeId,
+            ...(node as Record<string, unknown>),
+        };
+    }
+
+    for (const [connectionId, connection] of Object.entries(connections)) {
+        if (typeof connection !== 'object' || connection === null) {
+            continue;
+        }
+        const conn = connection as Record<string, unknown>;
+        state.connections[connectionId] = {
+            id:
+                typeof conn.id === 'string' && conn.id.trim().length > 0
+                    ? conn.id
+                    : connectionId,
+            ...(conn as Record<string, unknown>),
+        } as SessionConnectionState;
+    }
+
+    state.lastUpdatedAt = new Date().toISOString();
 }
 
 export function applyGraphMutationToState(
