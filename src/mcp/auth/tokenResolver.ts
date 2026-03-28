@@ -19,6 +19,11 @@ export interface ResolvedToken {
     expiration: TokenExpiration;
 }
 
+export function normalizeTokenInput(rawToken: string): string {
+    const trimmed = rawToken.trim().replace(/^Bearer\s+/i, '');
+    return trimmed.replace(/\s+/g, '');
+}
+
 export function maskToken(token: string): string {
     if (token.length <= 10) {
         return '***';
@@ -30,7 +35,8 @@ export function resolveToken(
     token: string,
     options?: { requireNotExpired?: boolean },
 ): ResolvedToken {
-    const claims = decodeTokenPayload(token);
+    const normalizedToken = normalizeTokenInput(token);
+    const claims = decodeTokenPayload(normalizedToken);
     const expiration = getTokenExpiration(claims);
 
     if (options?.requireNotExpired && expiration.expired === true) {

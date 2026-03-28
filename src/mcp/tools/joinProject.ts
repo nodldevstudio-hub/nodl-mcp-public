@@ -1,5 +1,6 @@
 import { CollaborationRuntime } from '../../runtime/collaborationRuntime.js';
 import {
+    normalizeTokenInput,
     resolveToken,
 } from '../auth/tokenResolver.js';
 
@@ -14,7 +15,10 @@ export async function joinProjectTool(
     args: JoinProjectArgs,
 ): Promise<Record<string, unknown>> {
     const endpoint = resolveEndpoint(args.endpoint);
-    const resolvedToken = resolveToken(args.token, { requireNotExpired: true });
+    const normalizedToken = normalizeTokenInput(args.token);
+    const resolvedToken = resolveToken(normalizedToken, {
+        requireNotExpired: true,
+    });
     const tokenProjectId = resolvedToken.claims.projectId;
     if (typeof tokenProjectId !== 'number') {
         throw new Error('Token is missing projectId claim.');
@@ -22,7 +26,7 @@ export async function joinProjectTool(
 
     const joinResult = await runtime.joinSession({
         endpoint,
-        token: args.token,
+        token: normalizedToken,
     });
 
     const displayName =
