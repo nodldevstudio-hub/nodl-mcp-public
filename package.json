@@ -1,6 +1,6 @@
 {
   "name": "nodl-collab-mcp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Public MCP server for Nodl collaboration via public endpoints and user-provided tokens.",
   "type": "module",
   "main": "dist/index.js",
@@ -12,9 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "check": "tsc --noEmit",
-    "release:auto": "node scripts/release-auto.mjs",
-    "release:patch": "npm version patch --no-git-tag-version && npm run build && npm publish --access public --registry=https://registry.npmjs.org"
+    "check": "tsc --noEmit"
   },
   "files": [
     "dist",

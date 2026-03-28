@@ -1,4 +1,4 @@
-# Nodl MCP (Public)
+# Nodl MCP
 
 MCP server to let AI clients interact with Nodl collaboration through public endpoints.
 
@@ -18,6 +18,7 @@ Available tools:
 ## Install in your MCP client (JSON config)
 
 Use `npx` so users do not need to clone anything.
+Private registry and scoped package names are supported (for example `@your-scope/nodl-collab-mcp`).
 
 ```json
 {
@@ -61,6 +62,7 @@ Input:
 Output:
 - `session` (`projectId`, `mode`, `role`)
 - decoded token metadata (`scopes`, `exp`)
+- fails fast if token is expired or token project does not match requested project
 
 ### `list_capabilities`
 
@@ -99,6 +101,7 @@ Output:
 
 - Token is kept in memory only for the MCP process lifetime.
 - Token is never persisted by this package.
+- Token parsing errors are masked (no plaintext token emitted in errors).
 - Backend is authoritative for access control.
 - Expired/invalid token is rejected by backend.
 

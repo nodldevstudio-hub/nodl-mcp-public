@@ -1,20 +1,19 @@
-import { decodeTokenPayload, tokenExpirationStatus } from './tokenUtils.js';
+import { resolveToken } from '../auth/tokenResolver.js';
 
 export interface ListCapabilitiesArgs {
     token: string;
 }
 
 export function listCapabilitiesTool(args: ListCapabilitiesArgs): Record<string, unknown> {
-    const tokenPayload = decodeTokenPayload(args.token);
-    const expiration = tokenExpirationStatus(args.token);
+    const resolved = resolveToken(args.token);
 
     return {
         ok: true,
-        role: tokenPayload.role ?? null,
-        actorType: tokenPayload.actorType ?? null,
-        projectId: tokenPayload.projectId ?? null,
-        scopes: tokenPayload.scopes ?? [],
-        expiration,
+        role: resolved.claims.role ?? null,
+        actorType: resolved.claims.actorType ?? null,
+        projectId: resolved.claims.projectId ?? null,
+        scopes: resolved.claims.scopes ?? [],
+        expiration: resolved.expiration,
         note: 'Capabilities are decoded from token payload; backend remains authoritative at runtime.',
     };
 }

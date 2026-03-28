@@ -1,5 +1,8 @@
 import { CollaborationRuntime } from '../../runtime/collaborationRuntime.js';
-import { decodeTokenPayload, tokenExpirationStatus } from './tokenUtils.js';
+import {
+    assertTokenProjectMatch,
+    resolveToken,
+} from '../auth/tokenResolver.js';
 
 export interface JoinProjectArgs {
     projectId: string;
@@ -12,8 +15,8 @@ export async function joinProjectTool(
     args: JoinProjectArgs,
 ): Promise<Record<string, unknown>> {
     const endpoint = args.endpoint ?? 'wss://realtime.nodl.dev';
-    const tokenPayload = decodeTokenPayload(args.token);
-    const expiry = tokenExpirationStatus(args.token);
+    const resolvedToken = resolveToken(args.token, { requireNotExpired: true });
+    assertTokenProjectMatch(resolvedToken.claims.projectId, args.projectId);
 
     const joinResult = await runtime.joinSession({
         endpoint,
@@ -25,12 +28,12 @@ export async function joinProjectTool(
         ok: true,
         session: joinResult,
         token: {
-            actorType: tokenPayload.actorType ?? null,
-            actorId: tokenPayload.actorId ?? null,
-            role: tokenPayload.role ?? null,
-            scopes: tokenPayload.scopes ?? [],
-            projectId: tokenPayload.projectId ?? null,
-            expiration: expiry,
+            actorType: resolvedToken.claims.actorType ?? null,
+            actorId: resolvedToken.claims.actorId ?? null,
+            role: resolvedToken.claims.role ?? null,
+            scopes: resolvedToken.claims.scopes ?? [],
+            projectId: resolvedToken.claims.projectId ?? null,
+            expiration: resolvedToken.expiration,
         },
         security: {
             tokenStoredOnDisk: false,
