@@ -1,5 +1,118 @@
 [
   {
+    "type": "artistic",
+    "displayName": "Artistic",
+    "category": "texture",
+    "subcategory": "effects",
+    "tags": [],
+    "description": "Artistic filter with Oil Paint, Pencil Sketch and Ink modes.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Artistic filtered texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Adjustment",
+        "defaultValue": "Oil Paint",
+        "tooltip": "Artistic rendering style",
+        "options": [
+          "Oil Paint",
+          "Pencil",
+          "Ink"
+        ]
+      },
+      {
+        "name": "intensity",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1,
+        "tooltip": "Effect blend intensity",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 4,
+        "tooltip": "Filter radius / stroke size",
+        "min": 1,
+        "max": 32,
+        "step": 1
+      },
+      {
+        "name": "threshold",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.5,
+        "tooltip": "Ink threshold",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "contrast",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.5,
+        "tooltip": "Ink contrast boost",
+        "min": 0,
+        "max": 4,
+        "step": 0.001
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
     "type": "noise",
     "displayName": "Noise",
     "category": "texture",
@@ -392,7 +505,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -502,7 +615,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -511,7 +624,7 @@
     "type": "displace",
     "displayName": "Displace",
     "category": "texture",
-    "subcategory": "effects",
+    "subcategory": "adjustements",
     "tags": [],
     "description": "Advanced displacement using a map",
     "inputs": [
@@ -641,7 +754,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -780,7 +893,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1030,7 +1143,7 @@
         "type": "string",
         "category": "Charset",
         "defaultValue": " .:-=+*#%@",
-        "tooltip": "Custom characters ordered from light to dark (min 2 chars, unlimited max)"
+        "tooltip": "Custom characters ordered from light to dark (min 2 chars)"
       },
       {
         "name": "cellSize",
@@ -1039,7 +1152,17 @@
         "defaultValue": 8,
         "tooltip": "Size of each ASCII character cell in pixels",
         "min": 4,
-        "max": 32,
+        "max": 64,
+        "step": 1
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "category": "Text",
+        "defaultValue": 54,
+        "tooltip": "Glyph rendering font size used to build ASCII atlas",
+        "min": 10,
+        "max": 128,
         "step": 1
       },
       {
@@ -1058,12 +1181,12 @@
         "type": "vector4",
         "category": "Appearance",
         "defaultValue": {
-          "x": 0,
+          "x": 1,
           "y": 1,
-          "z": 0,
+          "z": 1,
           "w": 1
         },
-        "tooltip": "Color of the ASCII characters (when Color Mode is Custom)",
+        "tooltip": "Color of ASCII characters in Custom mode",
         "componentLabels": [
           "R",
           "G",
@@ -1081,7 +1204,7 @@
           "z": 0,
           "w": 1
         },
-        "tooltip": "Background color behind characters (when Color Mode is Custom)",
+        "tooltip": "Background color in Custom mode",
         "componentLabels": [
           "R",
           "G",
@@ -1094,14 +1217,14 @@
         "type": "boolean",
         "category": "Appearance",
         "defaultValue": false,
-        "tooltip": "Invert the brightness mapping"
+        "tooltip": "Invert brightness mapping"
       },
       {
         "name": "contrast",
         "type": "number",
         "category": "Adjustment",
         "defaultValue": 1,
-        "tooltip": "Adjust contrast of the luminance",
+        "tooltip": "Adjust contrast of luminance",
         "min": 0.5,
         "max": 3,
         "step": 0.01
@@ -1111,7 +1234,7 @@
         "type": "number",
         "category": "Adjustment",
         "defaultValue": 0,
-        "tooltip": "Adjust brightness offset",
+        "tooltip": "Adjust luminance bias",
         "min": -0.5,
         "max": 0.5,
         "step": 0.01
@@ -1150,7 +1273,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1182,16 +1305,18 @@
         "type": "select",
         "category": "Dithering",
         "defaultValue": "Bayer 4x4",
+        "tooltip": "Select dithering algorithm or halftone screening mode",
         "options": [
           "Bayer 4x4",
-          "Noise"
+          "Noise",
+          "Halftone"
         ]
       },
       {
         "name": "levels",
         "type": "number",
         "category": "Dithering",
-        "defaultValue": 4,
+        "defaultValue": 2,
         "tooltip": "Number of quantization levels per channel",
         "min": 2,
         "max": 256,
@@ -1206,6 +1331,16 @@
         "min": 0,
         "max": 2,
         "step": 0.01
+      },
+      {
+        "name": "dotSize",
+        "type": "number",
+        "category": "Dithering",
+        "defaultValue": 6,
+        "tooltip": "Halftone dot size in pixels",
+        "min": 2,
+        "max": 32,
+        "step": 0.1
       },
       {
         "name": "colorDither",
@@ -1302,7 +1437,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1311,7 +1446,7 @@
     "type": "monochrome",
     "displayName": "Monochrome",
     "category": "texture",
-    "subcategory": "effects",
+    "subcategory": "adjustements",
     "tags": [],
     "description": "Convertit une texture en monochrome",
     "inputs": [
@@ -1334,11 +1469,12 @@
         "type": "select",
         "category": "Adjustment",
         "defaultValue": "Luminance",
-        "tooltip": "Methode de conversion en niveau de gris",
+        "tooltip": "Mode monochrome: gris (plusieurs methodes) ou sepia",
         "options": [
           "Luminance",
           "Average",
-          "MaxChannel"
+          "MaxChannel",
+          "Sepia"
         ]
       },
       {
@@ -1406,7 +1542,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1610,7 +1746,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1798,7 +1934,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1807,7 +1943,7 @@
     "type": "grain",
     "displayName": "Grain",
     "category": "texture",
-    "subcategory": "effects",
+    "subcategory": "generators",
     "tags": [],
     "description": "Adds animated film grain to an input texture.",
     "inputs": [
@@ -1937,7 +2073,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -1975,98 +2111,38 @@
         ]
       },
       {
-        "name": "colorCount",
-        "type": "number",
-        "category": "Appearance",
-        "defaultValue": 4,
-        "tooltip": "Number of gradient colors (1 to 4)",
-        "min": 1,
-        "max": 4,
-        "step": 1
-      },
-      {
-        "name": "color1",
-        "type": "vector4",
-        "category": "Appearance",
+        "name": "gradient",
+        "type": "gradient",
+        "category": "Color",
         "defaultValue": {
-          "x": 0.17144110072255403,
-          "y": 0,
-          "z": 1,
-          "w": 1
+          "stops": [
+            {
+              "id": "neon-corners-0",
+              "position": 0,
+              "color": "#2c00ff",
+              "alpha": 1
+            },
+            {
+              "id": "neon-corners-1",
+              "position": 0.3333333333333333,
+              "color": "#d464ff",
+              "alpha": 1
+            },
+            {
+              "id": "neon-corners-2",
+              "position": 0.6666666666666666,
+              "color": "#0085ff",
+              "alpha": 1
+            },
+            {
+              "id": "neon-corners-3",
+              "position": 1,
+              "color": "#0600ff",
+              "alpha": 1
+            }
+          ]
         },
-        "tooltip": "color1",
-        "min": 0,
-        "max": 1,
-        "step": 0.001,
-        "componentLabels": [
-          "R",
-          "G",
-          "B",
-          "A"
-        ]
-      },
-      {
-        "name": "color2",
-        "type": "vector4",
-        "category": "Appearance",
-        "defaultValue": {
-          "x": 0.8307698767709715,
-          "y": 0.3915724777393922,
-          "z": 1,
-          "w": 1
-        },
-        "tooltip": "color2",
-        "min": 0,
-        "max": 1,
-        "step": 0.001,
-        "componentLabels": [
-          "R",
-          "G",
-          "B",
-          "A"
-        ]
-      },
-      {
-        "name": "color3",
-        "type": "vector4",
-        "category": "Appearance",
-        "defaultValue": {
-          "x": 0,
-          "y": 0.5209955731953768,
-          "z": 1,
-          "w": 1
-        },
-        "tooltip": "color3",
-        "min": 0,
-        "max": 1,
-        "step": 0.001,
-        "componentLabels": [
-          "R",
-          "G",
-          "B",
-          "A"
-        ]
-      },
-      {
-        "name": "color4",
-        "type": "vector4",
-        "category": "Appearance",
-        "defaultValue": {
-          "x": 0.023153366173251366,
-          "y": 0,
-          "z": 1,
-          "w": 1
-        },
-        "tooltip": "color4",
-        "min": 0,
-        "max": 1,
-        "step": 0.001,
-        "componentLabels": [
-          "R",
-          "G",
-          "B",
-          "A"
-        ]
+        "tooltip": "Gradient stops used to color the generated pattern"
       },
       {
         "name": "colorBack",
@@ -2207,6 +2283,1917 @@
         "category": "Timer",
         "defaultValue": true,
         "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "linear-gradient",
+    "displayName": "Linear Gradient",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Generates a linear gradient texture with infinite phase animation driven by phase + uTime * speed.",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated linear gradient texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "gradient",
+        "type": "gradient",
+        "category": "Color",
+        "defaultValue": {
+          "stops": [
+            {
+              "id": "hot-0",
+              "position": 0,
+              "color": "#000000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-1",
+              "position": 0.33,
+              "color": "#ffff00",
+              "alpha": 1
+            },
+            {
+              "id": "hot-2",
+              "position": 0.66,
+              "color": "#ff0000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-3",
+              "position": 1,
+              "color": "#ffffff",
+              "alpha": 1
+            }
+          ]
+        },
+        "tooltip": "Gradient stops used to sample colors"
+      },
+      {
+        "name": "phase",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0,
+        "tooltip": "Free phase offset (unbounded)",
+        "allowNegative": true
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.2,
+        "tooltip": "Animation speed multiplier (can be negative)",
+        "min": -10,
+        "max": 10,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "center",
+        "type": "vector2",
+        "category": "Position",
+        "defaultValue": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "tooltip": "Gradient center in UV space",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "axisScale",
+        "type": "vector2",
+        "category": "Size",
+        "defaultValue": {
+          "x": 1,
+          "y": 1
+        },
+        "tooltip": "Axis scaling before evaluating the gradient coordinate",
+        "min": 0.001,
+        "max": 8,
+        "step": 0.001,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "category": "Rotation",
+        "defaultValue": 0,
+        "tooltip": "Rotation in degrees",
+        "min": -360,
+        "max": 360,
+        "step": 0.1,
+        "allowNegative": true
+      },
+      {
+        "name": "period",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 1,
+        "tooltip": "Period used to scale gradient progression",
+        "min": 0.001,
+        "max": 16,
+        "step": 0.001
+      },
+      {
+        "name": "gradientBias",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Adds a bias to the gradient lookup coordinate",
+        "min": -1,
+        "max": 1,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "feather",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Softens clamp boundaries when mode is Clamp",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Settings",
+        "defaultValue": "Clamp",
+        "tooltip": "Gradient coordinate mode",
+        "options": [
+          "Clamp",
+          "Repeat",
+          "Mirror"
+        ]
+      },
+      {
+        "name": "invert",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": false,
+        "tooltip": "Invert gradient lookup direction"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "radial-gradient",
+    "displayName": "Radial Gradient",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Generates a radial gradient texture with infinite phase animation driven by phase + uTime * speed.",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated radial gradient texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "gradient",
+        "type": "gradient",
+        "category": "Color",
+        "defaultValue": {
+          "stops": [
+            {
+              "id": "hot-0",
+              "position": 0,
+              "color": "#000000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-1",
+              "position": 0.33,
+              "color": "#ffff00",
+              "alpha": 1
+            },
+            {
+              "id": "hot-2",
+              "position": 0.66,
+              "color": "#ff0000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-3",
+              "position": 1,
+              "color": "#ffffff",
+              "alpha": 1
+            }
+          ]
+        },
+        "tooltip": "Gradient stops used to sample colors"
+      },
+      {
+        "name": "phase",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0,
+        "tooltip": "Free phase offset (unbounded)",
+        "allowNegative": true
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.2,
+        "tooltip": "Animation speed multiplier (can be negative)",
+        "min": -10,
+        "max": 10,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "center",
+        "type": "vector2",
+        "category": "Position",
+        "defaultValue": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "tooltip": "Gradient center in UV space",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "axisScale",
+        "type": "vector2",
+        "category": "Size",
+        "defaultValue": {
+          "x": 1,
+          "y": 1
+        },
+        "tooltip": "Axis scaling before evaluating radial distance",
+        "min": 0.001,
+        "max": 8,
+        "step": 0.001,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "category": "Rotation",
+        "defaultValue": 0,
+        "tooltip": "Rotation in degrees",
+        "min": -360,
+        "max": 360,
+        "step": 0.1,
+        "allowNegative": true
+      },
+      {
+        "name": "innerRadius",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 0,
+        "tooltip": "Inner radius before gradient starts",
+        "min": 0,
+        "max": 8,
+        "step": 0.001
+      },
+      {
+        "name": "outerRadius",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 0.5,
+        "tooltip": "Outer radius where gradient reaches the end",
+        "min": 0.001,
+        "max": 8,
+        "step": 0.001
+      },
+      {
+        "name": "period",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 1,
+        "tooltip": "Period used to scale radial gradient progression",
+        "min": 0.001,
+        "max": 16,
+        "step": 0.001
+      },
+      {
+        "name": "gradientBias",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Adds a bias to the gradient lookup coordinate",
+        "min": -1,
+        "max": 1,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "feather",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Softens clamp boundaries when mode is Clamp",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Settings",
+        "defaultValue": "Clamp",
+        "tooltip": "Gradient coordinate mode",
+        "options": [
+          "Clamp",
+          "Repeat",
+          "Mirror"
+        ]
+      },
+      {
+        "name": "invert",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": false,
+        "tooltip": "Invert gradient lookup direction"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "mandelbox-warp",
+    "displayName": "Mandelbox Warp",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Procedural Mandelbox warp fractal texture with animation and palette controls.",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated fractal texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "preset",
+        "type": "select",
+        "category": "Settings",
+        "defaultValue": "Neon Tunnel",
+        "tooltip": "Preset configuration",
+        "options": [
+          "Neon Tunnel",
+          "Cyber Bloom",
+          "Acid Spiral",
+          "Pulse Grid",
+          "Custom"
+        ]
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable animation"
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 1.1,
+        "tooltip": "Animation speed",
+        "min": 0,
+        "max": 8,
+        "step": 0.001
+      },
+      {
+        "name": "zoom",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 1.55,
+        "tooltip": "Fractal zoom",
+        "min": 0.2,
+        "max": 8,
+        "step": 0.001
+      },
+      {
+        "name": "centerOffset",
+        "type": "vector2",
+        "category": "Position",
+        "defaultValue": {
+          "x": 0,
+          "y": 0
+        },
+        "tooltip": "Fractal center offset",
+        "min": -2,
+        "max": 2,
+        "step": 0.001,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "category": "Rotation",
+        "defaultValue": 12,
+        "tooltip": "Fractal rotation",
+        "min": -360,
+        "max": 360,
+        "step": 0.1
+      },
+      {
+        "name": "iterations",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 12,
+        "tooltip": "Fractal iteration count",
+        "min": 4,
+        "max": 24,
+        "step": 1
+      },
+      {
+        "name": "bailout",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 8,
+        "tooltip": "Escape radius",
+        "min": 2,
+        "max": 32,
+        "step": 0.001
+      },
+      {
+        "name": "fold",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.15,
+        "tooltip": "Box-fold strength",
+        "min": 0.2,
+        "max": 2.5,
+        "step": 0.001
+      },
+      {
+        "name": "scale",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.92,
+        "tooltip": "Fractal scale",
+        "min": 0.2,
+        "max": 4,
+        "step": 0.001
+      },
+      {
+        "name": "distort",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.1,
+        "tooltip": "Domain warp amount",
+        "min": 0,
+        "max": 3,
+        "step": 0.001
+      },
+      {
+        "name": "twist",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.3,
+        "tooltip": "Radial twist",
+        "min": -4,
+        "max": 4,
+        "step": 0.001
+      },
+      {
+        "name": "detail",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.15,
+        "tooltip": "Micro detail boost",
+        "min": 0,
+        "max": 2,
+        "step": 0.001
+      },
+      {
+        "name": "seed",
+        "type": "number",
+        "category": "Settings",
+        "defaultValue": 12,
+        "tooltip": "Pattern seed",
+        "min": -10000,
+        "max": 10000,
+        "step": 0.001
+      },
+      {
+        "name": "color1",
+        "type": "vector4",
+        "category": "Color",
+        "defaultValue": {
+          "x": 0.06,
+          "y": 0.02,
+          "z": 0.2,
+          "w": 1
+        },
+        "tooltip": "Palette color 1",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "R",
+          "G",
+          "B",
+          "A"
+        ]
+      },
+      {
+        "name": "color2",
+        "type": "vector4",
+        "category": "Color",
+        "defaultValue": {
+          "x": 0,
+          "y": 0.65,
+          "z": 1,
+          "w": 1
+        },
+        "tooltip": "Palette color 2",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "R",
+          "G",
+          "B",
+          "A"
+        ]
+      },
+      {
+        "name": "color3",
+        "type": "vector4",
+        "category": "Color",
+        "defaultValue": {
+          "x": 0.95,
+          "y": 0.2,
+          "z": 1,
+          "w": 1
+        },
+        "tooltip": "Palette color 3",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "R",
+          "G",
+          "B",
+          "A"
+        ]
+      },
+      {
+        "name": "color4",
+        "type": "vector4",
+        "category": "Color",
+        "defaultValue": {
+          "x": 1,
+          "y": 0.95,
+          "z": 0.35,
+          "w": 1
+        },
+        "tooltip": "Palette color 4",
+        "min": 0,
+        "max": 1,
+        "step": 0.001,
+        "componentLabels": [
+          "R",
+          "G",
+          "B",
+          "A"
+        ]
+      },
+      {
+        "name": "hueShift",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 0,
+        "tooltip": "Global hue shift",
+        "min": -1,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "saturation",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 1.2,
+        "tooltip": "Color saturation",
+        "min": 0,
+        "max": 2,
+        "step": 0.001
+      },
+      {
+        "name": "contrast",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 1.3,
+        "tooltip": "Color contrast",
+        "min": 0,
+        "max": 3,
+        "step": 0.001
+      },
+      {
+        "name": "brightness",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 0.03,
+        "tooltip": "Color brightness offset",
+        "min": -1,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "intensity",
+        "type": "number",
+        "category": "Appearance",
+        "defaultValue": 1,
+        "tooltip": "Glow intensity",
+        "min": 0,
+        "max": 2,
+        "step": 0.001
+      },
+      {
+        "name": "noise",
+        "type": "number",
+        "category": "Noise",
+        "defaultValue": 0.1,
+        "tooltip": "Procedural grain amount",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "vignetteRadius",
+        "type": "number",
+        "category": "Appearance",
+        "defaultValue": 0.95,
+        "tooltip": "Vignette radius",
+        "min": 0,
+        "max": 2,
+        "step": 0.001
+      },
+      {
+        "name": "vignetteBias",
+        "type": "number",
+        "category": "Appearance",
+        "defaultValue": 0.3,
+        "tooltip": "Vignette softness",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "wave-generator",
+    "displayName": "Wave Generator",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Wave procedural texture generator",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 1
+      },
+      {
+        "name": "uFreq",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 10
+      },
+      {
+        "name": "uAmplitude",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.08
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#0f172a"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#22d3ee"
+      },
+      {
+        "name": "uInvert",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": false
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "techno-generator",
+    "displayName": "Cyber Grid",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Cyber grid procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 1.2
+      },
+      {
+        "name": "uScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 8
+      },
+      {
+        "name": "uPulse",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.4
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#080910"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#00f0ff"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "tunnel-generator",
+    "displayName": "Tunnel Generator",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Neon tunnel procedural texture generator",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 1
+      },
+      {
+        "name": "uWarp",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uTwist",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.7
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#ff4d00"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#00d4ff"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "julia-fractal-generator",
+    "displayName": "Julia Bloom",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Julia fractal bloom procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.7
+      },
+      {
+        "name": "uZoom",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 1.5
+      },
+      {
+        "name": "uRotate",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0
+      },
+      {
+        "name": "uPower",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uIterations",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 48
+      },
+      {
+        "name": "uBailout",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 64
+      },
+      {
+        "name": "uColorShift",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 0.2
+      },
+      {
+        "name": "uColorFreq",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 6.2831
+      },
+      {
+        "name": "uOrbitGlow",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.3
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#0b1020"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#22d3ee"
+      },
+      {
+        "name": "uColorC",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#f43f5e"
+      },
+      {
+        "name": "uGlowColor",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#d946ef"
+      },
+      {
+        "name": "uContrast",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.15
+      },
+      {
+        "name": "uSaturation",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.35
+      },
+      {
+        "name": "uJuliaMotion",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.35
+      },
+      {
+        "name": "uCenter",
+        "type": "vector2",
+        "category": "Position",
+        "defaultValue": {
+          "x": 0,
+          "y": 0
+        },
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "uJuliaC",
+        "type": "vector2",
+        "category": "Adjustment",
+        "defaultValue": {
+          "x": -0.745,
+          "y": 0.186
+        },
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "acid-jelly-generator",
+    "displayName": "Neon Gel",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Neon gel procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.9
+      },
+      {
+        "name": "uScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 2.4
+      },
+      {
+        "name": "uWarp",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uJelly",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1
+      },
+      {
+        "name": "uContrast",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.2
+      },
+      {
+        "name": "uGlow",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.5
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#12001f"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#00ffa3"
+      },
+      {
+        "name": "uColorC",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#ff00d4"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "heightmap-lighting-generator",
+    "displayName": "Relief Shading",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Relief shading procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 3.2
+      },
+      {
+        "name": "uSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.9
+      },
+      {
+        "name": "uHeightScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 8
+      },
+      {
+        "name": "uNormalStrength",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.8
+      },
+      {
+        "name": "uAmbient",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.35
+      },
+      {
+        "name": "uDiffuse",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.2
+      },
+      {
+        "name": "uShininess",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 28
+      },
+      {
+        "name": "uLightDir",
+        "type": "vector3",
+        "category": "Adjustment",
+        "defaultValue": {
+          "x": 0.5,
+          "y": 0.4,
+          "z": 0.9
+        },
+        "componentLabels": [
+          "X",
+          "Y",
+          "Z"
+        ]
+      },
+      {
+        "name": "uColorLow",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#0b1020"
+      },
+      {
+        "name": "uColorHigh",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#38bdf8"
+      },
+      {
+        "name": "uSpecColor",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#ffffff"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "hydra-ameba-generator",
+    "displayName": "Amoeba Feedback",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Amoeba feedback procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uOscA",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 15
+      },
+      {
+        "name": "uOscASync",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.01
+      },
+      {
+        "name": "uOscAOffset",
+        "type": "number",
+        "category": "Position",
+        "defaultValue": 0.1
+      },
+      {
+        "name": "uOscB",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1
+      },
+      {
+        "name": "uOscBSync",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": -0.1
+      },
+      {
+        "name": "uModOsc",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uRotate",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 4
+      },
+      {
+        "name": "uModAmount",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 20
+      },
+      {
+        "name": "uCenter",
+        "type": "vector2",
+        "category": "Position",
+        "defaultValue": {
+          "x": 0,
+          "y": 0
+        },
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      },
+      {
+        "name": "uColorGain",
+        "type": "vector3",
+        "category": "Color",
+        "defaultValue": {
+          "x": 1,
+          "y": 2.4,
+          "z": 5
+        },
+        "componentLabels": [
+          "X",
+          "Y",
+          "Z"
+        ]
+      },
+      {
+        "name": "uSaturation",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.4
+      },
+      {
+        "name": "uLumaThreshold",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1
+      },
+      {
+        "name": "uLumaSmooth",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.1
+      },
+      {
+        "name": "uScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 0.45
+      },
+      {
+        "name": "uDiffMix",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "hydra-nelson-blend-generator",
+    "displayName": "Spectral Feedback Blend",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Spectral feedback blend procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uFreq",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 8
+      },
+      {
+        "name": "uSync",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": -0.5
+      },
+      {
+        "name": "uOffset",
+        "type": "number",
+        "category": "Position",
+        "defaultValue": 1
+      },
+      {
+        "name": "uColorScale",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 1
+      },
+      {
+        "name": "uColorGain",
+        "type": "vector3",
+        "category": "Color",
+        "defaultValue": {
+          "x": 0.51,
+          "y": 0.11,
+          "z": 2.2
+        },
+        "componentLabels": [
+          "X",
+          "Y",
+          "Z"
+        ]
+      },
+      {
+        "name": "uBlend",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.6
+      },
+      {
+        "name": "uRotate",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": -0.5
+      },
+      {
+        "name": "uRotateSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": -0.5
+      },
+      {
+        "name": "uShapeSides",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 4
+      },
+      {
+        "name": "uShapeRotate",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.5
+      },
+      {
+        "name": "uShapeRotateSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.5
+      },
+      {
+        "name": "uShapeScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 2
+      },
+      {
+        "name": "uRepeatX",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uRepeatY",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 2
+      },
+      {
+        "name": "uFeedbackMod",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.08
+      },
+      {
+        "name": "uModAmount",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.25
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "hydra-debora-colorama-generator",
+    "displayName": "Colorama Storm",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Colorama storm procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uOscFreq",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 5
+      },
+      {
+        "name": "uNoiseScale",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 5
+      },
+      {
+        "name": "uNoiseSpeed",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 0.35
+      },
+      {
+        "name": "uColorGain",
+        "type": "vector3",
+        "category": "Color",
+        "defaultValue": {
+          "x": 1.1,
+          "y": 1.05,
+          "z": 1.2
+        },
+        "componentLabels": [
+          "X",
+          "Y",
+          "Z"
+        ]
+      },
+      {
+        "name": "uColorama",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 0.4
+      },
+      {
+        "name": "uFronts",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.2
+      },
+      {
+        "name": "uStorm",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.1
+      },
+      {
+        "name": "uBanding",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 7
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "kaleido-reactor-generator",
+    "displayName": "Kaleido Pulse",
+    "category": "texture",
+    "subcategory": "generators",
+    "tags": [],
+    "description": "Kaleido pulse procedural texture preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Generated texture"
+      }
+    ],
+    "properties": [
+      {
+        "name": "uSegments",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 8
+      },
+      {
+        "name": "uTwist",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.8
+      },
+      {
+        "name": "uZoom",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 1
+      },
+      {
+        "name": "uFeedback",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.68
+      },
+      {
+        "name": "uChromatic",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.2
+      },
+      {
+        "name": "uPulse",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1
+      },
+      {
+        "name": "uReactor",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1.25
+      },
+      {
+        "name": "uGlow",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.55
+      },
+      {
+        "name": "uColorA",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#0d0520"
+      },
+      {
+        "name": "uColorB",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#00e5d4"
+      },
+      {
+        "name": "uColorC",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#ff4d9b"
+      },
+      {
+        "name": "uGlowColor",
+        "type": "color",
+        "category": "Color",
+        "defaultValue": "#d946ef"
+      },
+      {
+        "name": "Clock Rate",
+        "type": "number",
+        "category": "Timer",
+        "defaultValue": 30,
+        "tooltip": "Ticks per second (Hz)",
+        "min": 1,
+        "max": 240,
+        "step": 1
+      },
+      {
+        "name": "Clock Enabled",
+        "type": "boolean",
+        "category": "Timer",
+        "defaultValue": true,
+        "tooltip": "Enable/disable the clock for this node"
+      }
+    ]
+  },
+  {
+    "type": "gradient-mapping",
+    "displayName": "Gradient Mapping",
+    "category": "texture",
+    "subcategory": "adjustements",
+    "tags": [],
+    "description": "Maps a selected source channel to a custom gradient with offset, wrap and alpha options.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Gradient-mapped texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "source",
+        "type": "select",
+        "category": "Input",
+        "defaultValue": "Luminosity",
+        "tooltip": "Source channel used to index the gradient",
+        "options": [
+          "Luminosity",
+          "Alpha",
+          "Red",
+          "Green",
+          "Blue",
+          "Cyan",
+          "Amgenta",
+          "Yellow",
+          "Key/Black",
+          "Saturation",
+          "Hue",
+          "Value/Brightness"
+        ]
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Gradient index offset (-255 to 255)",
+        "min": -255,
+        "max": 255,
+        "step": 1,
+        "allowNegative": true
+      },
+      {
+        "name": "Wrap",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": false,
+        "tooltip": "Wrap gradient index instead of clamping it"
+      },
+      {
+        "name": "Preserve Alpha",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": true,
+        "tooltip": "Keep original texture alpha"
+      },
+      {
+        "name": "gradient",
+        "type": "gradient",
+        "category": "Color",
+        "defaultValue": {
+          "stops": [
+            {
+              "id": "hot-0",
+              "position": 0,
+              "color": "#000000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-1",
+              "position": 0.33,
+              "color": "#ffff00",
+              "alpha": 1
+            },
+            {
+              "id": "hot-2",
+              "position": 0.66,
+              "color": "#ff0000",
+              "alpha": 1
+            },
+            {
+              "id": "hot-3",
+              "position": 1,
+              "color": "#ffffff",
+              "alpha": 1
+            }
+          ]
+        },
+        "tooltip": "Gradient stops used for color mapping"
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
   },
@@ -2390,7 +4377,600 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
+    "type": "color-adjust",
+    "displayName": "Color Adjust",
+    "category": "texture",
+    "subcategory": "adjustements",
+    "tags": [],
+    "description": "Color adjustment modes: Negative, HSV, Curves, Levels and Posterize.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Adjusted texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Adjustment",
+        "defaultValue": "Negative",
+        "tooltip": "Adjustment mode",
+        "options": [
+          "Negative",
+          "HSV",
+          "Curves",
+          "Levels",
+          "Posterize"
+        ]
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1,
+        "tooltip": "Global blend amount for the selected mode",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "Hue Shift",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 0,
+        "tooltip": "Hue offset in turns for HSV mode",
+        "min": -1,
+        "max": 1,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "Saturation",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 1,
+        "tooltip": "Saturation multiplier for HSV mode",
+        "min": 0,
+        "max": 3,
+        "step": 0.001
+      },
+      {
+        "name": "Value",
+        "type": "number",
+        "category": "Color",
+        "defaultValue": 1,
+        "tooltip": "Value multiplier for HSV mode",
+        "min": 0,
+        "max": 3,
+        "step": 0.001
+      },
+      {
+        "name": "Curve Gamma",
+        "type": "vector3",
+        "category": "Adjustment",
+        "defaultValue": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "tooltip": "Per-channel gamma for Curves mode",
+        "min": 0.1,
+        "max": 4,
+        "step": 0.001,
+        "componentLabels": [
+          "R",
+          "G",
+          "B"
+        ]
+      },
+      {
+        "name": "Black Level",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0,
+        "tooltip": "Input black point for Levels mode",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "White Level",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1,
+        "tooltip": "Input white point for Levels mode",
+        "min": 0,
+        "max": 1,
+        "step": 0.001
+      },
+      {
+        "name": "Level Gamma",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1,
+        "tooltip": "Gamma in Levels mode",
+        "min": 0.1,
+        "max": 4,
+        "step": 0.001
+      },
+      {
+        "name": "Posterize Levels",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 8,
+        "tooltip": "Number of color steps for Posterize mode",
+        "min": 2,
+        "max": 256,
+        "step": 1
+      },
+      {
+        "name": "Invert Alpha",
+        "type": "boolean",
+        "category": "Adjustment",
+        "defaultValue": false,
+        "tooltip": "Invert output alpha channel"
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
+    "type": "pixelate",
+    "displayName": "Pixelate",
+    "category": "texture",
+    "subcategory": "effects",
+    "tags": [],
+    "description": "Pixelizes a texture with linked or independent X/Y cells and selectable sampling anchor.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Pixelized texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "Cells",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 64,
+        "tooltip": "Number of pixel cells on both axes when Link X/Y is enabled",
+        "min": 1,
+        "max": 1024,
+        "step": 1
+      },
+      {
+        "name": "Cells X",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 64,
+        "tooltip": "Number of pixel cells horizontally",
+        "min": 1,
+        "max": 1024,
+        "step": 1
+      },
+      {
+        "name": "Cells Y",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 64,
+        "tooltip": "Number of pixel cells vertically",
+        "min": 1,
+        "max": 1024,
+        "step": 1
+      },
+      {
+        "name": "Link X/Y",
+        "type": "boolean",
+        "category": "Size",
         "defaultValue": true,
+        "tooltip": "Use same number of cells on X and Y axes"
+      },
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Adjustment",
+        "defaultValue": "Cell Center",
+        "tooltip": "Sampling method inside each pixel cell",
+        "options": [
+          "Cell Center",
+          "Cell Edge",
+          "Top Left"
+        ]
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
+    "type": "crystallize",
+    "displayName": "Crystallize",
+    "category": "texture",
+    "subcategory": "effects",
+    "tags": [],
+    "description": "Creates a crystal mosaic effect from nearest Voronoi cells.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Crystallized texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "Cell Size",
+        "type": "number",
+        "category": "Size",
+        "defaultValue": 24,
+        "tooltip": "Average size of each crystal cell in pixels",
+        "min": 1,
+        "max": 512,
+        "step": 1
+      },
+      {
+        "name": "Quality",
+        "type": "number",
+        "category": "Quality",
+        "defaultValue": 4,
+        "tooltip": "Higher values improve cell search and edge quality",
+        "min": 1,
+        "max": 8,
+        "step": 1
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
+    "type": "dents",
+    "displayName": "Dents",
+    "category": "texture",
+    "subcategory": "effects",
+    "tags": [],
+    "description": "Applies a turbulent dented surface distortion with refraction.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Dented texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "Scale",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 8,
+        "tooltip": "Pattern scale of the dents",
+        "min": 0.25,
+        "max": 64,
+        "step": 0.01
+      },
+      {
+        "name": "Refraction",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 0.6,
+        "tooltip": "Refraction strength driven by dent gradients",
+        "min": -3,
+        "max": 3,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "Details",
+        "type": "number",
+        "category": "Adjustment",
+        "defaultValue": 1,
+        "tooltip": "Amount of fine detail in the dent structure",
+        "min": 0.25,
+        "max": 4,
+        "step": 0.01
+      },
+      {
+        "name": "Turbulence Angle",
+        "type": "number",
+        "category": "Rotation",
+        "defaultValue": 35,
+        "tooltip": "Directional angle of turbulence flow in degrees",
+        "min": -180,
+        "max": 180,
+        "step": 0.1,
+        "allowNegative": true
+      },
+      {
+        "name": "Quality",
+        "type": "number",
+        "category": "Quality",
+        "defaultValue": 4,
+        "tooltip": "Higher quality increases turbulence octaves",
+        "min": 1,
+        "max": 8,
+        "step": 1
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
+        "tooltip": "Toggle checkerboard background for transparent areas"
+      }
+    ]
+  },
+  {
+    "type": "polar-inversion",
+    "displayName": "Polar Inversion",
+    "category": "texture",
+    "subcategory": "effects",
+    "tags": [],
+    "description": "Inverts the texture in polar space with scale and center offset controls.",
+    "inputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Input texture"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Polar inverted texture output"
+      }
+    ],
+    "properties": [
+      {
+        "name": "scale",
+        "type": "number",
+        "category": "Transform",
+        "defaultValue": 1,
+        "tooltip": "Inversion scale in polar space",
+        "min": -8,
+        "max": 8,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "Offset X",
+        "type": "number",
+        "category": "Position",
+        "defaultValue": 0,
+        "tooltip": "Horizontal center offset in UV space",
+        "min": -2,
+        "max": 2,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "Offset Y",
+        "type": "number",
+        "category": "Position",
+        "defaultValue": 0,
+        "tooltip": "Vertical center offset in UV space",
+        "min": -2,
+        "max": 2,
+        "step": 0.001,
+        "allowNegative": true
+      },
+      {
+        "name": "mode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "Clamp",
+        "tooltip": "Edge behavior outside UV bounds",
+        "options": [
+          "Clamp",
+          "Wrap",
+          "Reflect",
+          "Transparent"
+        ]
+      },
+      {
+        "name": "Resolution",
+        "type": "vector2",
+        "category": "Output",
+        "defaultValue": {
+          "x": 512,
+          "y": 512
+        },
+        "tooltip": "Output texture resolution in pixels",
+        "min": 1,
+        "max": 4096,
+        "step": 1,
+        "componentLabels": [
+          "W",
+          "H"
+        ]
+      },
+      {
+        "name": "wrapMode",
+        "type": "select",
+        "category": "Texture",
+        "defaultValue": "None",
+        "tooltip": "Texture wrap behavior. None = transparent border.",
+        "options": [
+          "Repeat",
+          "Mirror",
+          "Clamp",
+          "None"
+        ]
+      },
+      {
+        "name": "Show Transparency",
+        "type": "boolean",
+        "category": "Texture",
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -2591,7 +5171,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -2838,7 +5418,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -2847,7 +5427,7 @@
     "type": "color-grade",
     "displayName": "ColorGrade",
     "category": "texture",
-    "subcategory": "effects",
+    "subcategory": "adjustements",
     "tags": [],
     "description": "Color grading with gain/gamma/lift and vignette controls.",
     "inputs": [
@@ -3030,7 +5610,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -3131,7 +5711,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -3451,7 +6031,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -3553,7 +6133,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -3756,7 +6336,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -3914,7 +6494,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -4065,7 +6645,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -4125,6 +6705,97 @@
         "category": "Render",
         "defaultValue": true,
         "tooltip": "Automatically add ambient and directional lights to the scene"
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "category": "Output",
+        "defaultValue": 512,
+        "tooltip": "Output texture width in pixels",
+        "min": 64,
+        "max": 4096,
+        "step": 1
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "category": "Output",
+        "defaultValue": 512,
+        "tooltip": "Output texture height in pixels",
+        "min": 64,
+        "max": 4096,
+        "step": 1
+      }
+    ]
+  },
+  {
+    "type": "point-to-texture",
+    "displayName": "Point To Texture",
+    "category": "points",
+    "subcategory": "modifiers",
+    "tags": [],
+    "description": "Render points data from a camera view to a 2D texture",
+    "inputs": [
+      {
+        "name": "Points",
+        "type": "points",
+        "tooltip": "Points data to render"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Texture",
+        "type": "texture",
+        "tooltip": "Output texture rendered from points"
+      }
+    ],
+    "properties": [
+      {
+        "name": "backgroundColor",
+        "type": "color",
+        "category": "Render",
+        "defaultValue": "#000000",
+        "tooltip": "Background color of the rendered points scene"
+      },
+      {
+        "name": "fov",
+        "type": "number",
+        "category": "Camera",
+        "defaultValue": 50,
+        "tooltip": "Camera field of view in degrees",
+        "min": 1,
+        "max": 120,
+        "step": 1
+      },
+      {
+        "name": "cameraDistance",
+        "type": "number",
+        "category": "Camera",
+        "defaultValue": 5,
+        "tooltip": "Distance of the camera from the points center",
+        "min": 0.1,
+        "max": 100,
+        "step": 0.1
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "category": "Output",
+        "defaultValue": 512,
+        "tooltip": "Output texture width in pixels",
+        "min": 64,
+        "max": 4096,
+        "step": 1
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "category": "Output",
+        "defaultValue": 512,
+        "tooltip": "Output texture height in pixels",
+        "min": 64,
+        "max": 4096,
+        "step": 1
       }
     ]
   },
@@ -4297,7 +6968,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -4528,7 +7199,7 @@
         "name": "Show Transparency",
         "type": "boolean",
         "category": "Texture",
-        "defaultValue": true,
+        "defaultValue": false,
         "tooltip": "Toggle checkerboard background for transparent areas"
       }
     ]
@@ -8005,6 +10676,82 @@
         "category": "Input",
         "defaultValue": "value",
         "tooltip": "Variable name shown in preview"
+      }
+    ]
+  },
+  {
+    "type": "vector2",
+    "displayName": "Vector2",
+    "category": "data",
+    "subcategory": "input",
+    "tags": [
+      "input"
+    ],
+    "description": "Outputs a Vector2 value (x, y)",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Vector2",
+        "type": "vector2",
+        "tooltip": "Vector4 output value"
+      }
+    ],
+    "properties": [
+      {
+        "name": "Vector2",
+        "type": "vector2",
+        "category": "Input",
+        "defaultValue": {
+          "x": 0,
+          "y": 0
+        },
+        "tooltip": "Vector2 input value",
+        "min": null,
+        "max": null,
+        "allowNegative": true,
+        "componentLabels": [
+          "X",
+          "Y"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "vector3",
+    "displayName": "Vector3",
+    "category": "data",
+    "subcategory": "input",
+    "tags": [
+      "input"
+    ],
+    "description": "Outputs a Vector3 value (x, y, z)",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "Vector3",
+        "type": "vector3",
+        "tooltip": "Vector3 output value"
+      }
+    ],
+    "properties": [
+      {
+        "name": "Vector3",
+        "type": "vector3",
+        "category": "Input",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "tooltip": "Vector3 input value",
+        "min": null,
+        "max": null,
+        "allowNegative": true,
+        "componentLabels": [
+          "X",
+          "Y",
+          "Z"
+        ]
       }
     ]
   },
